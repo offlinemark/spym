@@ -1,5 +1,3 @@
-import operator
-
 class Registers(object):
     def __init__(self):
         self.registers = [0 for _ in xrange(32)]
