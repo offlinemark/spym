@@ -1,4 +1,5 @@
 class Registers(object):
+    regc = 32
     regtab = {
         'v0': 2, 'v1': 3,
         'a0': 4, 'a1': 5, 'a2': 6, 'a3': 7,
@@ -14,7 +15,7 @@ class Registers(object):
     }
 
     def __init__(self):
-        self.registers = [0 for _ in xrange(32)]
+        self.registers = [0] * self.regc
         self.pc = 0
 
     def read(self, reg):
