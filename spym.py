@@ -14,7 +14,7 @@ def main():
 
     if len(sys.argv) != 2:
         while True:
-            inp = raw_input('myps > ').strip()
+            inp = raw_input('spym > ').strip()
             if inp == 'exit':
                 break
             elif inp == 'dump':
