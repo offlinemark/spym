@@ -15,6 +15,7 @@ class Registers(object):
 
     def __init__(self):
         self.registers = [0 for _ in xrange(32)]
+        self.pc = 0
 
     def read(self, reg):
         ind = reg if type(reg) is int else self.regtab[reg]

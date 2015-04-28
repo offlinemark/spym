@@ -1,5 +1,4 @@
 import re
-import sys
 import struct
 
 from registers import Registers
@@ -10,7 +9,19 @@ class CPU(object):
         self.r = Registers()
         self.m = mem
 
-    def execute(self, instr):
+    def start(self, instr_mem):
+        while self.r.pc in xrange(len(instr_mem)):
+            instr = instr_mem[self.r.pc]
+            try:
+                self.execute_single(instr)
+            except Exception, e:
+                if e.message == 'exit syscall':
+                    return
+                raise e
+            self.r.pc += 1
+        print '\n*** pc outside instruction memory ***'
+
+    def execute_single(self, instr):
         if instr.name == 'li':
             # li rd, imm
             rd = instr.ops[0]
@@ -53,8 +64,8 @@ class CPU(object):
             id = self.r.read('v0')
             if id == 10:
                 # exit
-                print '*** exiting ***'
-                sys.exit()
+                print '\n*** exiting ***'
+                raise Exception('exit syscall')
             elif id == 1:
                 # print_int
                 print self.r.read('a0'),
@@ -72,5 +83,8 @@ class CPU(object):
             raise Exception('bad instruction')
 
     def dump(self):
+        print '\n=== CPU Dump ==='
+        print '\nRegisters\n'
         self.r.dump()
+        print '\nData Memory\n'
         self.m.dump()

@@ -23,13 +23,14 @@ def main():
             elif not inp:
                 continue
 
-            cpu.execute(Instruction(inp))
+            cpu.execute_single(Instruction(inp))
     else:
         with open(sys.argv[1]) as f:
-            for _line in f.readlines():
-                line = _line.strip()
-                if line and not line.startswith('#'):
-                    cpu.execute(Instruction(line))
+            instr_mem = f.readlines()
+        instr_mem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
+                           instr_mem)
+        instr_mem = map(lambda x: Instruction(x.strip()), instr_mem)
+        cpu.start(instr_mem)
 
     cpu.dump()
 
