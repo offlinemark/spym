@@ -12,6 +12,7 @@ class Registers(object):
             'sp': 29,
             'fp': 30,
             'ra': 31,
+            'zero': 0
         }
 
     def read(self, reg):
@@ -20,6 +21,8 @@ class Registers(object):
 
     def write(self, reg, contents):
         ind = reg if type(reg) is int else self.regtab[reg]
+        if ind == 0:
+            raise Exception('can\'t write to $zero')
         self.registers[ind] = contents
 
     def dump(self):
