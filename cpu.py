@@ -50,6 +50,7 @@ class CPU(object):
             id = self.r.read('v0')
             if id == 10:
                 # exit
+                print '*** exiting ***'
                 sys.exit()
             elif id == 1:
                 # print_int
@@ -61,6 +62,8 @@ class CPU(object):
                     self.r.write('v0', inp)
                 except Exception:
                     raise Exception('input not integer')
+            else:
+                raise Exception('bad syscall id')
 
         else:
             raise Exception('bad instruction')
