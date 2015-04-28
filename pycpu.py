@@ -1,6 +1,29 @@
 import sys
 
-registers = [0 for _ in xrange(32)]
+
+
+class Registers:
+    def __init__(self):
+        self.registers = [0 for _ in xrange(32)]
+        self.regtab = {
+            'v0': 2,
+            'v1': 3,
+        }
+
+    def read(self, reg):
+        ind = reg if type(reg) is int else self.regtab[reg]
+        return self.registers[ind]
+
+    def write(self, reg, contents):
+        ind = reg if type(reg) is int else self.regtab[reg]
+        self.registers[ind] = contents
+
+    def dump(self):
+        for i, each in enumerate(self.registers):
+            print '${} : {}\t\t'.format(i, each)
+
+
+R = Registers()
 
 
 def execute(line):
@@ -8,14 +31,11 @@ def execute(line):
     opcode = instr[0]
     if opcode == 'li':
         # li $1, 3
-        target = int(instr[1][1:-1])  # $ and ,
-        toput = int(instr[2])
-        registers[target] = toput
+        dest = int(instr[1][1:-1])  # $ and ,
+        src = int(instr[2])
+        R.write(dest, src)
 
 
-def dump():
-    for i, each in enumerate(registers):
-        print '${} : {}'.format(i, each)
 
 
 def main():
@@ -27,7 +47,7 @@ def main():
         for line in f.readlines():
             execute(line)
 
-    dump()
+    R.dump()
 
 if __name__ == '__main__':
     main()
