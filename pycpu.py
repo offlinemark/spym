@@ -4,6 +4,9 @@ import struct
 
 from registers import Registers
 from memory import Memory
+from instruction import Instruction
+
+MEMORY = 16
 
 
 class CPU(object):
@@ -11,38 +14,36 @@ class CPU(object):
         self.r = Registers()
         self.m = Memory(mem)
 
-    def execute(self, line):
-        instr = line.split()
-        opcode = instr[0]
-        if opcode == 'li':
+    def execute(self, instr):
+        if instr.name == 'li':
             # li rd, imm
-            rd = instr[1][1:-1]  # $ and ,
-            imm = int(instr[2])
+            rd = instr.ops[0]
+            imm = int(instr.ops[1])
             self.r.write(rd, imm)
-        elif opcode == 'add':
+        elif instr.name == 'add':
             # add rd, rs, rt
-            rd = instr[1][1:-1]
-            rs = self.r.read(instr[2][1:-1])
-            rt = self.r.read(instr[3][1:])
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs + rt)
-        elif opcode == 'addi':
+        elif instr.name == 'addi':
             # addi rd, rs, imm
-            rd = instr[1][1:-1]
-            rs = self.r.read(instr[2][1:-1])
-            rt = int(instr[3])
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            rt = int(instr.ops[2])
             self.r.write(rd, rs + rt)
-        elif opcode == 'lw':
+        elif instr.name == 'lw':
             # lw rt, offs(rs)
-            rd = instr[1][1:-1]
-            offs = int(instr[2].split('(')[0])
-            addr = self.r.read(re.split('[()]', instr[2])[1][1:]) + offs
+            rd = instr.ops[0]
+            offs = int(instr.ops[1].split('(')[0])
+            addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
             read = struct.unpack('<I', self.m.read(addr, 4))[0]
             self.r.write(rd, read)
-        elif opcode == 'sw':
+        elif instr.name == 'sw':
             # sw rs, offs(rs)
-            rd = self.r.read(instr[1][1:-1])
-            offs = int(instr[2].split('(')[0])
-            addr = self.r.read(re.split('[()]', instr[2])[1][1:]) + offs
+            rd = self.r.read(instr.ops[0])
+            offs = int(instr.ops[1].split('(')[0])
+            addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
             self.m.write(addr, struct.pack('<I', rd))
         else:
             raise Exception('bad instruction')
@@ -53,14 +54,16 @@ class CPU(object):
 
 
 def main():
-    cpu = CPU(16)
+    cpu = CPU(MEMORY)
     if len(sys.argv) != 2:
         print 'usage'
         sys.exit(1)
 
     with open(sys.argv[1]) as f:
-        for line in filter(None, f.readlines()):
-            cpu.execute(line)
+        for _line in f.readlines():
+            line = _line.strip()
+            if line and not line.startswith('#'):
+                cpu.execute(Instruction(line))
 
     cpu.dump()
 
