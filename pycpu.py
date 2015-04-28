@@ -11,10 +11,18 @@ class CPU(object):
         instr = line.split()
         opcode = instr[0]
         if opcode == 'li':
-            # li $1, 3
-            dest = instr[1][1:-1]  # $ and ,
-            src = int(instr[2])
-            self.r.write(dest, src)
+            # li rd, imm
+            rd = instr[1][1:-1]  # $ and ,
+            imm = int(instr[2])
+            self.r.write(rd, imm)
+        elif opcode == 'add':
+            # add rd, rs, rt
+            rd = instr[1][1:-1]
+            rs = self.r.read(instr[2][1:-1])
+            rt = self.r.read(instr[3][1:])
+            self.r.write(rd, rs + rt)
+        else:
+            raise Exception('bad instruction')
 
 
 def main():
