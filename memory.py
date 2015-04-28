@@ -3,9 +3,13 @@ class Memory(object):
         self.memory = bytearray([0] * mem)
 
     def read(self, addr, count):
+        if addr + count > len(self.memory):
+            raise Exception('read exceeds memory bounds')
         return str(self.memory[addr:addr+count])
 
     def write(self, addr, buffer):
+        if addr + len(buffer) > len(self.memory):
+            raise Exception('write exceeds memory bounds')
         self.memory[addr:addr+len(buffer)] = buffer
 
     def dump(self):
