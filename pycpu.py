@@ -21,6 +21,12 @@ class CPU(object):
             rs = self.r.read(instr[2][1:-1])
             rt = self.r.read(instr[3][1:])
             self.r.write(rd, rs + rt)
+        elif opcode == 'addi':
+            # addi rd, rs, imm
+            rd = instr[1][1:-1]
+            rs = self.r.read(instr[2][1:-1])
+            rt = int(instr[3])
+            self.r.write(rd, rs + rt)
         else:
             raise Exception('bad instruction')
 
