@@ -23,7 +23,12 @@ def main():
             elif not inp:
                 continue
 
-            cpu.execute_single(Instruction(inp))
+            try:
+                cpu.execute_single(Instruction(inp))
+            except Exception, e:
+                if e.message == 'exit syscall':
+                    break
+                raise e
     else:
         with open(sys.argv[1]) as f:
             instr_mem = f.readlines()
