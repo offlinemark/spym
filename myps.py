@@ -7,10 +7,11 @@ MEMORY = 16
 
 
 def main():
-    cpu = CPU(MEMORY)
     if len(sys.argv) != 2:
-        print 'usage'
+        print 'Usage: {} <file>'
         sys.exit(1)
+
+    cpu = CPU(MEMORY)
 
     with open(sys.argv[1]) as f:
         for _line in f.readlines():
