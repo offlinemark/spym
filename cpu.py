@@ -1,4 +1,5 @@
 import re
+import sys
 import struct
 
 from registers import Registers
@@ -41,6 +42,22 @@ class CPU(object):
             offs = int(instr.ops[1].split('(')[0])
             addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
             self.m.write(addr, struct.pack('<I', rd))
+        elif instr.name == 'syscall':
+            id = self.r.read('v0')
+            if id == 10:
+                # exit
+                sys.exit()
+            elif id == 1:
+                # print_int
+                print self.r.read('a0'),
+            elif id == 5:
+                # read_int
+                try:
+                    inp = int(raw_input())
+                    self.r.write('v0', inp)
+                except Exception:
+                    raise Exception('input not integer')
+
         else:
             raise Exception('bad instruction')
 
