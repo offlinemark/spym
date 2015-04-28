@@ -13,11 +13,12 @@ def main():
 
     if len(sys.argv) != 2:
         while True:
-            inp = raw_input('myps > ')
+            inp = raw_input('myps > ').strip()
             if inp == 'exit':
                 break
             elif inp == 'dump':
                 cpu.dump()
+                continue
             elif not inp:
                 continue
 

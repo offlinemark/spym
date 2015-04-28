@@ -45,6 +45,10 @@ class CPU(object):
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
+        elif instr.name == 'slt':
+            # slt rd, rs, rt
+            tmp = 1 if self.r.read(instr.ops[1]) < self.r.read(instr.ops[2]) else 0
+            self.r.write(instr.ops[0], tmp)
         elif instr.name == 'syscall':
             # syscall
             id = self.r.read('v0')
