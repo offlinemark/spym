@@ -1,3 +1,3 @@
 # myps
 
-Little Python MIPS interpreter.
+A little Harvard architecture MIPS interpreter.
