@@ -3,13 +3,12 @@ import sys
 import struct
 
 from registers import Registers
-from memory import Memory
 
 
 class CPU(object):
     def __init__(self, mem):
         self.r = Registers()
-        self.m = Memory(mem)
+        self.m = mem
 
     def execute(self, instr):
         if instr.name == 'li':

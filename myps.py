@@ -4,12 +4,13 @@ import sys
 
 from cpu import CPU
 from instruction import Instruction
+from memory import Memory
 
-MEMORY = 16
+MEM_SIZE = 16
 
 
 def main():
-    cpu = CPU(MEMORY)
+    cpu = CPU(Memory(MEM_SIZE))
 
     if len(sys.argv) != 2:
         while True:
