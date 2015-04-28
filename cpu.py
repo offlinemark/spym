@@ -42,7 +42,11 @@ class CPU(object):
             offs = int(instr.ops[1].split('(')[0])
             addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
             self.m.write(addr, struct.pack('<I', rd))
+        elif instr.name == 'move':
+            # move rd, rs
+            self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
         elif instr.name == 'syscall':
+            # syscall
             id = self.r.read('v0')
             if id == 10:
                 # exit
