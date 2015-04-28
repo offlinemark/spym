@@ -19,11 +19,11 @@ class Registers(object):
         self.pc = 0
 
     def read(self, reg):
-        ind = reg if type(reg) is int else self.regtab[reg]
+        ind = int(reg) if reg[0].isdigit() else self.regtab[reg]
         return self.registers[ind]
 
     def write(self, reg, contents):
-        ind = reg if type(reg) is int else self.regtab[reg]
+        ind = int(reg) if reg[0].isdigit() else self.regtab[reg]
         if ind == 0:
             raise Exception('can\'t write to $zero')
         self.registers[ind] = contents
