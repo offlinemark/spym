@@ -9,10 +9,7 @@ class Instruction(object):
 
         # iterate through operands, perform some loose checks, and append
         # to self.ops
-        for i, each in enumerate(instr[1:]):
+        for each in instr[1:]:
             if each.endswith(','):
                 each = each[:-1]
-            if each.startswith('$'):
-                self.ops.append(each[1:])
-            else:
-                self.ops.append(each)
+            self.ops.append(each[1:] if each.startswith('$') else each)
