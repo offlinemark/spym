@@ -30,6 +30,12 @@ def main():
                     break
                 raise e
     else:
+        if sys.argv[1] in ['-h', '--help']:
+            print 'usage: {} [-h] [FILE]'
+            print """Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS
+source file as argument."""
+            sys.exit()
+
         with open(sys.argv[1]) as f:
             instr_mem = f.readlines()
         instr_mem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
