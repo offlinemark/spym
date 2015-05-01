@@ -1,3 +1,5 @@
+import re
+
 class Instruction(object):
     def __init__(self, line):
         instr = line.split(' ')
@@ -12,4 +14,10 @@ class Instruction(object):
         for each in instr[1:]:
             if each.endswith(','):
                 each = each[:-1]
-            self.ops.append(each[1:] if each.startswith('$') else each)
+            if each.startswith('$'):
+                each = each[1:]
+            if '(' in each:
+                each = each.replace('$', '')
+                self.ops += re.split('[()]', each)[:-1]
+            else:
+                self.ops.append(each)

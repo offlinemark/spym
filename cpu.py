@@ -1,4 +1,3 @@
-import re
 import struct
 
 from registers import Registers
@@ -46,15 +45,15 @@ class CPU(object):
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
-            offs = int(instr.ops[1].split('(')[0])
-            addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
+            offs = int(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
             self.r.write(rd, read)
         elif instr.name == 'sw':
             # sw rs, offs(rs)
             rd = self.r.read(instr.ops[0])
-            offs = int(instr.ops[1].split('(')[0])
-            addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
+            offs = int(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
             self.dmem.write(addr, struct.pack('<I', rd))
         elif instr.name == 'move':
             # move rd, rs
