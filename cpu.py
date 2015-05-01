@@ -5,13 +5,17 @@ from registers import Registers
 
 
 class CPU(object):
-    def __init__(self, mem):
+    def __init__(self, dmem, imem=None):
         self.r = Registers()
-        self.m = mem
+        self.dmem = dmem
+        self.imem = imem
 
-    def start(self, instr_mem):
-        while self.r.pc in xrange(len(instr_mem)):
-            instr = instr_mem[self.r.pc]
+    def start(self):
+        if self.imem is None:
+            raise Exception('imem not set')
+
+        while self.r.pc in xrange(len(self.imem)):
+            instr = self.imem[self.r.pc]
             try:
                 self.execute_single(instr)
             except Exception, e:
@@ -44,14 +48,14 @@ class CPU(object):
             rd = instr.ops[0]
             offs = int(instr.ops[1].split('(')[0])
             addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
-            read = struct.unpack('<I', self.m.read(addr, 4))[0]
+            read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
             self.r.write(rd, read)
         elif instr.name == 'sw':
             # sw rs, offs(rs)
             rd = self.r.read(instr.ops[0])
             offs = int(instr.ops[1].split('(')[0])
             addr = self.r.read(re.split('[()]', instr.ops[1])[1][1:]) + offs
-            self.m.write(addr, struct.pack('<I', rd))
+            self.dmem.write(addr, struct.pack('<I', rd))
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
@@ -87,4 +91,4 @@ class CPU(object):
         print '\nRegisters\n'
         self.r.dump()
         print '\nData Memory\n'
-        self.m.dump()
+        self.dmem.dump()

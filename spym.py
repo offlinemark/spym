@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 import sys
 
@@ -37,11 +37,12 @@ source file as argument."""
             sys.exit()
 
         with open(sys.argv[1]) as f:
-            instr_mem = f.readlines()
-        instr_mem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
-                           instr_mem)
-        instr_mem = map(lambda x: Instruction(x.strip()), instr_mem)
-        cpu.start(instr_mem)
+            imem = f.readlines()
+        imem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
+                      imem)
+        imem = map(lambda x: Instruction(x.strip()), imem)
+        cpu.imem = imem
+        cpu.start()
 
     cpu.dump()
 
