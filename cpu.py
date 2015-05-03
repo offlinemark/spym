@@ -227,6 +227,12 @@ class CPU(object):
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
+        elif instr.name == 'div':
+            # div rs, rt
+            rs = self.r.read(instr.ops[0])
+            rt = self.r.read(instr.ops[1])
+            self.r.lo = rs / rt
+            self.r.hi = rs % rt
         elif instr.name == 'mult':
             # mult rs, rt
             rs = self.r.read(instr.ops[0])
