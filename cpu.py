@@ -116,6 +116,12 @@ class CPU(object):
             # slti rd, rs, imm
             tmp = 1 if self.r.read(instr.ops[1]) < int(instr.ops[2]) else 0
             self.r.write(instr.ops[0], tmp)
+        elif instr.name == 'beq':
+            # beq rs, rt, label
+            if (self.r.read(instr.ops[0]) == self.r.read(instr.ops[1])):
+                # the -1 is because pc is automatically incremented 1 when this
+                # returns
+                self.r.pc = labeltab[instr.ops[2]] - 1
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
