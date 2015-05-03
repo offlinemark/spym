@@ -122,6 +122,12 @@ class CPU(object):
                 # the -1 is because pc is automatically incremented 1 when this
                 # returns
                 self.r.pc = labeltab[instr.ops[2]] - 1
+        elif instr.name == 'bne':
+            # bne rs, rt, label
+            if (self.r.read(instr.ops[0]) != self.r.read(instr.ops[1])):
+                # the -1 is because pc is automatically incremented 1 when this
+                # returns
+                self.r.pc = labeltab[instr.ops[2]] - 1
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
