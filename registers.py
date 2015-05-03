@@ -15,22 +15,26 @@ class Registers(object):
     }
 
     def __init__(self, dmem_size):
-        self.registers = [0] * self.regc
-        self.registers[29] = dmem_size
+        self.gpr = [0] * self.regc
+        self.gpr[29] = dmem_size
         self.pc = 0
+        self.hi = 0
+        self.lo = 0
 
     def read(self, reg):
         ind = int(reg) if reg[0].isdigit() else self.regtab[reg]
-        return self.registers[ind]
+        return self.gpr[ind]
 
     def write(self, reg, contents):
         ind = int(reg) if reg[0].isdigit() else self.regtab[reg]
         if ind == 0:
             raise Exception('can\'t write to $zero')
-        self.registers[ind] = contents
+        self.gpr[ind] = contents
 
     def dump(self):
         for reg in sorted(self.regtab):
             print '${}/{} : {}\t\t'.format(reg, self.regtab[reg],
-                                           self.registers[self.regtab[reg]])
+                                           self.gpr[self.regtab[reg]])
         print 'pc : {}'.format(self.pc)
+        print 'hi : {}'.format(self.hi)
+        print 'lo : {}'.format(self.lo)

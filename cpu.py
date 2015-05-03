@@ -227,6 +227,13 @@ class CPU(object):
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
+        elif instr.name == 'mult':
+            # mult rs, rt
+            rs = self.r.read(instr.ops[0])
+            rt = self.r.read(instr.ops[1])
+            mult = (rs * rt) & 0xffffffffffffffff
+            self.r.hi = mult >> 32
+            self.r.lo = mult & 0xffffffff
         elif instr.name == 'syscall':
             # syscall
             id = self.r.read('v0')
