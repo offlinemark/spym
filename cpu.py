@@ -189,6 +189,11 @@ class CPU(object):
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
             self.r.write(rd, read)
+        elif instr.name == 'lui':
+            # lui rt, imm
+            rt = instr.ops[0]
+            imm = int(instr.ops[1])
+            self.r.write(rt, (imm << 16) & 0xffffffff)
         elif instr.name == 'li':
             # li rd, imm
             rd = instr.ops[0]
