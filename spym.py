@@ -1,12 +1,11 @@
 #!/usr/bin/env python2.7
 
 import re
-import sys
 import argparse
 
-from cpu import CPU, labeltab
-from instruction import Instruction
-from memory import Memory
+from emu.cpu import CPU, labeltab
+from emu.instruction import Instruction
+from emu.memory import Memory
 
 
 def process_imem(raw_imem):
