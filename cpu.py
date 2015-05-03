@@ -108,6 +108,14 @@ class CPU(object):
             rs = self.r.read(instr.ops[1])
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs >> rt)
+        elif instr.name == 'slt':
+            # slt rd, rs, rt
+            tmp = 1 if self.r.read(instr.ops[1]) < self.r.read(instr.ops[2]) else 0
+            self.r.write(instr.ops[0], tmp)
+        elif instr.name == 'slti':
+            # slti rd, rs, imm
+            tmp = 1 if self.r.read(instr.ops[1]) < int(instr.ops[2]) else 0
+            self.r.write(instr.ops[0], tmp)
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
@@ -129,10 +137,6 @@ class CPU(object):
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
-        elif instr.name == 'slt':
-            # slt rd, rs, rt
-            tmp = 1 if self.r.read(instr.ops[1]) < self.r.read(instr.ops[2]) else 0
-            self.r.write(instr.ops[0], tmp)
         elif instr.name == 'j':
             # j label
             # the -1 is because pc is automatically incremented 1 when this
