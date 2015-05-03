@@ -96,11 +96,17 @@ class CPU(object):
             shamt = int(instr.ops[2])
             self.r.write(rd, rs << shamt)
         elif instr.name == 'srl':
-            # sll rd, rs, shamt
+            # srl rd, rs, shamt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             shamt = int(instr.ops[2])
             self.r.write(rd, rs >> shamt)
+        elif instr.name == 'sllv':
+            # sllv rd, rs, rt
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            rt = self.r.read(instr.ops[2])
+            self.r.write(rd, rs << rt)
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
