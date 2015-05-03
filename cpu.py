@@ -240,6 +240,12 @@ class CPU(object):
             mult = (rs * rt) & 0xffffffffffffffff
             self.r.hi = mult >> 32
             self.r.lo = mult & 0xffffffff
+        elif instr.name == 'mfhi':
+            # mfhi rd
+            self.r.write(instr.ops[0], self.r.hi)
+        elif instr.name == 'mflo':
+            # mfhi rd
+            self.r.write(instr.ops[0], self.r.lo)
         elif instr.name == 'syscall':
             # syscall
             id = self.r.read('v0')
