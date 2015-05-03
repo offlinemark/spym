@@ -89,6 +89,12 @@ class CPU(object):
             rs = self.r.read(instr.ops[1])
             rt = int(instr.ops[2])
             self.r.write(rd, rs ^ rt)
+        elif instr.name == 'sll':
+            # sll rd, rs, shamt
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            shamt = int(instr.ops[2])
+            self.r.write(rd, rs << shamt)
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
