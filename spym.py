@@ -12,6 +12,7 @@ MEM_SIZE = 16
 
 def process_imem(raw_imem):
     label_regex = re.compile('^\w+:$')
+    processed_labels = 0
     tmp = []
 
     # filter out empty lines and comments
@@ -22,10 +23,14 @@ def process_imem(raw_imem):
             key = each.split(':')[0]
             if key in labeltab:
                 raise Exception('label already used')
-            # since the label will not be added to the tmp list, setting it
-            # to i effectively points the label at the first instruction in
-            # the label
-            labeltab[key] = i
+            # i here indexes into a list containing labels, however those
+            # labels will not be present in the final list. to ensure that
+            # the imem address stored in labeltab refers to the correct
+            # index in the final list, subtract it by the number of labels
+            # that occur above the current one which have been artifically
+            # increasing the index
+            labeltab[key] = i - processed_labels
+            processed_labels += 1
         else:
             tmp.append(Instruction(each.strip()))
 
