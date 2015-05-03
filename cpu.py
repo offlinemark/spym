@@ -2,6 +2,8 @@ import struct
 
 from registers import Registers
 
+labeltab = {}
+
 
 class CPU(object):
     def __init__(self, dmem, imem=None):
@@ -65,6 +67,11 @@ class CPU(object):
             # slt rd, rs, rt
             tmp = 1 if self.r.read(instr.ops[1]) < self.r.read(instr.ops[2]) else 0
             self.r.write(instr.ops[0], tmp)
+        elif instr.name == 'j':
+            # j label
+            # the -1 is because pc is automatically incremented 1 when this
+            # returns
+            self.r.pc = labeltab[instr.ops[0]] - 1
         elif instr.name == 'syscall':
             # syscall
             id = self.r.read('v0')

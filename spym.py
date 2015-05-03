@@ -1,12 +1,35 @@
 #!/usr/bin/env python2.7
 
+import re
 import sys
 
-from cpu import CPU
+from cpu import CPU, labeltab
 from instruction import Instruction
 from memory import Memory
 
 MEM_SIZE = 16
+
+
+def process_imem(raw_imem):
+    label_regex = re.compile('^\w+:$')
+    tmp = []
+
+    # filter out empty lines and comments
+    raw_imem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
+                      raw_imem)
+    for i, each in enumerate(raw_imem):
+        if label_regex.match(each):
+            key = each.split(':')[0]
+            if key in labeltab:
+                raise Exception('label already used')
+            # since the label will not be added to the tmp list, setting it
+            # to i effectively points the label at the first instruction in
+            # the label
+            labeltab[key] = i
+        else:
+            tmp.append(Instruction(each.strip()))
+
+    return tmp
 
 
 def main():
@@ -37,11 +60,8 @@ source file as argument."""
             sys.exit()
 
         with open(sys.argv[1]) as f:
-            imem = f.readlines()
-        imem = filter(lambda x: x.strip() and not x.strip().startswith('#'),
-                      imem)
-        imem = map(lambda x: Instruction(x.strip()), imem)
-        cpu.imem = imem
+            raw_imem = f.readlines()
+        cpu.imem = process_imem(raw_imem)
         cpu.start()
 
     cpu.dump()

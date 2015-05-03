@@ -1,5 +1,6 @@
 import re
 
+
 class Instruction(object):
     def __init__(self, line):
         instr = line.split(' ')
