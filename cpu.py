@@ -185,6 +185,11 @@ class CPU(object):
             read = struct.unpack('<H', self.dmem.read(addr, 2))[0]
             self.r.write(rt, read)
         elif instr.name == 'lw':
+            # TODO: lw will always treat that memory as signed, even when it
+            # potentially should be unsigned? With sw we can detect if they're
+            # trying to write a negative number and change the struct.pack
+            # arg accordingly, but with lw, we have no indication
+
             # lw rt, offs(rs)
             rd = instr.ops[0]
             offs = self._get_imm(instr.ops[1])
@@ -203,14 +208,22 @@ class CPU(object):
             self.r.write(rd, imm)
         elif instr.name == 'sb':
             # sb rt, offs(rs)
-            rt = instr.ops[0]
-            off
-        elif instr.name == 'sw':
-            # sw rs, offs(rs)
-            rd = self.r.read(instr.ops[0])
+            rt = self.r.read(instr.ops[0])
             offs = self._get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
-            self.dmem.write(addr, struct.pack('<i' if rd < 0 else '<I', rd))
+            self.dmem.write(addr, struct.pack('<b' if rt < 0 else '<B', rt))
+        elif instr.name == 'sh':
+            # sb rt, offs(rs)
+            rt = self.r.read(instr.ops[0])
+            offs = self._get_imm(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
+            self.dmem.write(addr, struct.pack('<h' if rt < 0 else '<H', rt))
+        elif instr.name == 'sw':
+            # sw rt, offs(rs)
+            rt = self.r.read(instr.ops[0])
+            offs = self._get_imm(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
+            self.dmem.write(addr, struct.pack('<i' if rt < 0 else '<I', rt))
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
