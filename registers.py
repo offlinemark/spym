@@ -32,3 +32,4 @@ class Registers(object):
         for reg in sorted(self.regtab):
             print '${}/{} : {}\t\t'.format(reg, self.regtab[reg],
                                            self.registers[self.regtab[reg]])
+        print 'pc : {}'.format(self.pc)
