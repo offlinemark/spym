@@ -1,5 +1,4 @@
 class Registers(object):
-    regc = 32
     regtab = {
         'v0': 2, 'v1': 3,
         'a0': 4, 'a1': 5, 'a2': 6, 'a3': 7,
@@ -15,7 +14,7 @@ class Registers(object):
     }
 
     def __init__(self, dmem_size):
-        self.gpr = [0] * self.regc
+        self.gpr = [0] * 32
         self.gpr[29] = dmem_size
         self.pc = 0
         self.hi = 0
