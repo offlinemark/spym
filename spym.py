@@ -2,12 +2,11 @@
 
 import re
 import sys
+import argparse
 
 from cpu import CPU, labeltab
 from instruction import Instruction
 from memory import Memory
-
-MEM_SIZE = 16
 
 
 def process_imem(raw_imem):
@@ -37,10 +36,20 @@ def process_imem(raw_imem):
     return tmp
 
 
-def main():
-    cpu = CPU(Memory(MEM_SIZE))
+def get_args():
+    parser = argparse.ArgumentParser(description='Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS source file as argument.')
+    parser.add_argument('file', metavar='FILE', type=str,
+                        help='MIPS source file', nargs='?')
+    parser.add_argument('--memory', type=int, help='Data memory size',
+                        default=64)
+    return parser.parse_args()
 
-    if len(sys.argv) != 2:
+
+def main():
+    args = get_args()
+    cpu = CPU(Memory(args.memory))
+
+    if not args.file:
         while True:
             inp = raw_input('spym > ').strip()
             if inp == 'exit':
@@ -58,13 +67,7 @@ def main():
                     break
                 raise e
     else:
-        if sys.argv[1] in ['-h', '--help']:
-            print 'usage: {} [-h] [FILE]'
-            print """Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS
-source file as argument."""
-            sys.exit()
-
-        with open(sys.argv[1]) as f:
+        with open(args.file) as f:
             raw_imem = f.readlines()
         cpu.imem = process_imem(raw_imem)
         cpu.start()
