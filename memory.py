@@ -4,12 +4,12 @@ class Memory(object):
         self.memory = bytearray([0] * size)
 
     def read(self, addr, count):
-        if addr + count > len(self.memory):
+        if addr + count > self.size:
             raise Exception('read exceeds memory bounds')
         return str(self.memory[addr:addr+count])
 
     def write(self, addr, buffer):
-        if addr + len(buffer) > len(self.memory):
+        if addr + len(buffer) > self.size:
             raise Exception('write exceeds memory bounds')
         self.memory[addr:addr+len(buffer)] = buffer
 
