@@ -150,6 +150,10 @@ class CPU(object):
         elif instr.name == 'jr':
             # jr rs
             self._set_pc(self.r.read(instr.ops[0]))
+        elif instr.name == 'jalr':
+            # jalr rs
+            self.r.write('ra', self.r.pc + 1)
+            self._set_pc(self.r.read(instr.ops[0]))
         elif instr.name == 'lb':
             # lb rt, offs(rs)
             rt = instr.ops[0]
@@ -157,17 +161,13 @@ class CPU(object):
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<b', self.dmem.read(addr, 1))[0]
             self.r.write(rt, read)
-        elif instr.name == 'lw':
-            # lw rt, offs(rs)
+        elif instr.name == 'lbu':
+            # lbu rt, offs(rs)
             rt = instr.ops[0]
             offs = int(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
-            read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
+            read = struct.unpack('<B', self.dmem.read(addr, 1))[0]
             self.r.write(rt, read)
-        elif instr.name == 'jalr':
-            # jalr rs
-            self.r.write('ra', self.r.pc + 1)
-            self._set_pc(self.r.read(instr.ops[0]))
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
