@@ -185,7 +185,7 @@ class CPU(object):
             rd = self.r.read(instr.ops[0])
             offs = int(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
-            self.dmem.write(addr, struct.pack('<I', rd))
+            self.dmem.write(addr, struct.pack('<i' if rd < 0 else '<I', rd))
         elif instr.name == 'move':
             # move rd, rs
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
