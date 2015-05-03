@@ -119,15 +119,27 @@ class CPU(object):
         elif instr.name == 'beq':
             # beq rs, rt, label
             if (self.r.read(instr.ops[0]) == self.r.read(instr.ops[1])):
-                # the -1 is because pc is automatically incremented 1 when this
-                # returns
-                self.r.pc = labeltab[instr.ops[2]] - 1
+                self._set_pc(instr.ops[2])
         elif instr.name == 'bne':
             # bne rs, rt, label
             if (self.r.read(instr.ops[0]) != self.r.read(instr.ops[1])):
-                # the -1 is because pc is automatically incremented 1 when this
-                # returns
-                self.r.pc = labeltab[instr.ops[2]] - 1
+                self._set_pc(instr.ops[2])
+        elif instr.name == 'blt':
+            # blt rs, rt, label
+            if (self.r.read(instr.ops[0]) < self.r.read(instr.ops[1])):
+                self._set_pc(instr.ops[2])
+        elif instr.name == 'bgt':
+            # bgt rs, rt, label
+            if (self.r.read(instr.ops[0]) > self.r.read(instr.ops[1])):
+                self._set_pc(instr.ops[2])
+        elif instr.name == 'ble':
+            # ble rs, rt, label
+            if (self.r.read(instr.ops[0]) <= self.r.read(instr.ops[1])):
+                self._set_pc(instr.ops[2])
+        elif instr.name == 'bge':
+            # bge rs, rt, label
+            if (self.r.read(instr.ops[0]) >= self.r.read(instr.ops[1])):
+                self._set_pc(instr.ops[2])
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
@@ -151,9 +163,7 @@ class CPU(object):
             self.r.write(instr.ops[0], self.r.read(instr.ops[1]))
         elif instr.name == 'j':
             # j label
-            # the -1 is because pc is automatically incremented 1 when this
-            # returns
-            self.r.pc = labeltab[instr.ops[0]] - 1
+            self._set_pc(instr.ops[0])
         elif instr.name == 'syscall':
             # syscall
             id = self.r.read('v0')
@@ -183,3 +193,8 @@ class CPU(object):
         self.r.dump()
         print '\nData Memory\n'
         self.dmem.dump()
+
+    def _set_pc(self, label):
+        # the -1 is because pc is automatically incremented 1 when this
+        # returns
+        self.r.pc = labeltab[label] - 1
