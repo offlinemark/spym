@@ -168,6 +168,20 @@ class CPU(object):
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<B', self.dmem.read(addr, 1))[0]
             self.r.write(rt, read)
+        elif instr.name == 'lh':
+            # lh rt, offs(rs)
+            rt = instr.ops[0]
+            offs = int(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
+            read = struct.unpack('<h', self.dmem.read(addr, 2))[0]
+            self.r.write(rt, read)
+        elif instr.name == 'lhu':
+            # lhu rt, offs(rs)
+            rt = instr.ops[0]
+            offs = int(instr.ops[1])
+            addr = self.r.read(instr.ops[2]) + offs
+            read = struct.unpack('<H', self.dmem.read(addr, 2))[0]
+            self.r.write(rt, read)
         elif instr.name == 'lw':
             # lw rt, offs(rs)
             rd = instr.ops[0]
