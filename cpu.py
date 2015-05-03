@@ -43,8 +43,8 @@ class CPU(object):
             # addi rd, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            rt = int(instr.ops[2])
-            self.r.write(rd, rs + rt)
+            imm = self._get_imm(instr.ops[2])
+            self.r.write(rd, rs + imm)
         elif instr.name == 'sub':
             # sub rd, rs, rt
             rd = instr.ops[0]
@@ -61,8 +61,8 @@ class CPU(object):
             # andi rd, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            rt = int(instr.ops[2])
-            self.r.write(rd, rs & rt)
+            imm = self._get_imm(instr.ops[2])
+            self.r.write(rd, rs & imm)
         elif instr.name == 'or':
             # or rd, rs, rt
             rd = instr.ops[0]
@@ -73,8 +73,8 @@ class CPU(object):
             # ori rd, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            rt = int(instr.ops[2])
-            self.r.write(rd, rs | rt)
+            imm = self._get_imm(instr.ops[2])
+            self.r.write(rd, rs | imm)
         elif instr.name == 'xor':
             # xor rd, rs, rt
             rd = instr.ops[0]
@@ -85,8 +85,8 @@ class CPU(object):
             # xori rd, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            rt = int(instr.ops[2])
-            self.r.write(rd, rs ^ rt)
+            imm = self._get_imm(instr.ops[2])
+            self.r.write(rd, rs ^ imm)
         elif instr.name == 'sll':
             # sll rd, rs, shamt
             rd = instr.ops[0]
@@ -117,7 +117,9 @@ class CPU(object):
             self.r.write(instr.ops[0], tmp)
         elif instr.name == 'slti':
             # slti rd, rs, imm
-            tmp = 1 if self.r.read(instr.ops[1]) < int(instr.ops[2]) else 0
+            rs = instr.ops[1]
+            imm = self._get_imm(instr.ops[2])
+            tmp = 1 if self.r.read(rs) < imm else 0
             self.r.write(instr.ops[0], tmp)
         elif instr.name == 'beq':
             # beq rs, rt, label
@@ -195,12 +197,12 @@ class CPU(object):
         elif instr.name == 'lui':
             # lui rt, imm
             rt = instr.ops[0]
-            imm = int(instr.ops[1])
+            imm = self._get_imm(instr.ops[1])
             self.r.write(rt, (imm << 16) & 0xffffffff)
         elif instr.name == 'li':
             # li rd, imm
             rd = instr.ops[0]
-            imm = int(instr.ops[1])
+            imm = self._get_imm(instr.ops[1])
             self.r.write(rd, imm)
         elif instr.name == 'sw':
             # sw rs, offs(rs)
@@ -248,3 +250,6 @@ class CPU(object):
         # the -1 is because pc is automatically incremented 1 when this
         # returns
         self.r.pc = value - 1
+
+    def _get_imm(self, imm):
+        return int(imm, 16) if imm.startswith('0x') else int(imm)
