@@ -10,19 +10,22 @@ class CPU(object):
         self.imem = imem
 
     def start(self):
+        print '=== CPU Start===\n'
+
         if self.imem is None:
             raise Exception('imem not set')
 
         while self.r.pc in xrange(len(self.imem)):
             instr = self.imem[self.r.pc]
             try:
+                print '[{}] {}'.format(self.r.pc, instr.raw) 
                 self.execute_single(instr)
             except Exception, e:
                 if e.message == 'exit syscall':
                     return
                 raise e
             self.r.pc += 1
-        print '\n*** pc outside instruction memory ***'
+        print '\n*** pc [{}] outside instruction memory ***'.format(self.r.pc)
 
     def execute_single(self, instr):
         if instr.name == 'li':

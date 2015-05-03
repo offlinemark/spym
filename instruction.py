@@ -3,6 +3,7 @@ import re
 class Instruction(object):
     def __init__(self, line):
         instr = line.split(' ')
+        self.raw = line
         self.name = instr[0]
         self.ops = []
 
