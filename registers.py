@@ -14,8 +14,9 @@ class Registers(object):
         'zero': 0
     }
 
-    def __init__(self):
+    def __init__(self, dmem_size):
         self.registers = [0] * self.regc
+        self.registers[29] = dmem_size
         self.pc = 0
 
     def read(self, reg):
