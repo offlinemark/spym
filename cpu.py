@@ -30,12 +30,7 @@ class CPU(object):
         print '\n*** pc [{}] outside instruction memory ***'.format(self.r.pc)
 
     def execute_single(self, instr):
-        if instr.name == 'li':
-            # li rd, imm
-            rd = instr.ops[0]
-            imm = int(instr.ops[1])
-            self.r.write(rd, imm)
-        elif instr.name == 'add':
+        if instr.name == 'add':
             # add rd, rs, rt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
@@ -120,6 +115,11 @@ class CPU(object):
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
             self.r.write(rd, read)
+        elif instr.name == 'li':
+            # li rd, imm
+            rd = instr.ops[0]
+            imm = int(instr.ops[1])
+            self.r.write(rd, imm)
         elif instr.name == 'sw':
             # sw rs, offs(rs)
             rd = self.r.read(instr.ops[0])
