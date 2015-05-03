@@ -48,7 +48,12 @@ def main():
     args = get_args()
     cpu = CPU(Memory(args.memory))
 
-    if not args.file:
+    if args.file:
+        with open(args.file) as f:
+            raw_imem = f.readlines()
+        cpu.imem = process_imem(raw_imem)
+        cpu.start()
+    else:
         while True:
             inp = raw_input('spym > ').strip()
             if inp == 'exit':
@@ -65,11 +70,6 @@ def main():
                 if e.message == 'exit syscall':
                     break
                 raise e
-    else:
-        with open(args.file) as f:
-            raw_imem = f.readlines()
-        cpu.imem = process_imem(raw_imem)
-        cpu.start()
 
     cpu.dump()
 
