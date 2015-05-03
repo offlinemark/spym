@@ -1,6 +1,7 @@
 class Memory(object):
-    def __init__(self, mem):
-        self.memory = bytearray([0] * mem)
+    def __init__(self, size):
+        self.size = size
+        self.memory = bytearray([0] * size)
 
     def read(self, addr, count):
         if addr + count > len(self.memory):

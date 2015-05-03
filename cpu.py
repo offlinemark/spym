@@ -8,6 +8,9 @@ labeltab = {}
 class CPU(object):
     def __init__(self, dmem, imem=None):
         self.r = Registers()
+        # stack starts at /high/ memory. off the end of memory in fact.
+        # this is so that sub'ing by 4 keeps it word aligned
+        self.r.write('sp', dmem.size)
         self.dmem = dmem
         self.imem = imem
 
