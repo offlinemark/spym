@@ -1,4 +1,3 @@
-import string
 import binascii
 
 
@@ -36,6 +35,6 @@ class Memory(object):
 
     def _print_version(self, word):
         ret = ''
-        for char in word.decode():
-            ret += char if char in string.printable else '.'
+        for char in word:
+            ret += chr(char) if char > 0x20 and char < 0x7f  else '.'
         return ret
