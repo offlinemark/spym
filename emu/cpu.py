@@ -8,7 +8,7 @@ datatab = {}
 
 class CPU(object):
     def __init__(self, dmem, imem=None):
-        self.r = Registers(dmem.size)
+        self.r = Registers(dmem.size())
         self.dmem = dmem
         self.imem = imem
 

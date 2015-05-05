@@ -1,3 +1,7 @@
+import string
+import binascii
+
+
 class Memory(object):
     """Generic memory abstaction."""
 
@@ -22,4 +26,16 @@ class Memory(object):
         return len(self.memory)
 
     def dump(self):
-        print repr(self.memory)
+        for i in range(self.size() - 1, 0, -8):
+            word = self.memory[i:i-4:-1]
+            word2 = self.memory[i-4:i-8:-1]
+            print '{:04x}  {} {}  {} {}'.format(i, binascii.hexlify(word),
+                                                binascii.hexlify(word2),
+                                                self._print_version(word),
+                                                self._print_version(word2))
+
+    def _print_version(self, word):
+        ret = ''
+        for char in word.decode():
+            ret += char if char in string.printable else '.'
+        return ret
