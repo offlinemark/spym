@@ -44,31 +44,31 @@ def parse_data(data_segment):
         size = TYPE_TAB[ty]
         decls = map(lambda x: x.strip(), decls.split(','))
 
-        datatab[label] = offset
-
-        for decl in decls:
+        for decl in decls[::-1]:
             if '.ascii' in ty:
-                str = decl.split('"')[1]
-                dseg += str
-                offset += len(str)
                 if ty.endswith('z'):
                     dseg += '\x00'
                     offset += 1
+                str = decl.split('"')[1][::-1]
+                dseg += str
+                offset += len(str)
             else:
                 if ty == '.byte':
-                    dseg += struct.pack('<b', get_imm(decl))
+                    dseg += struct.pack('>b', get_imm(decl))
                 elif ty == '.space':
                     dseg += '\x00'*size
                 elif ty == '.halfword':
                     # use big endian because we're going to reverse the whole
                     # bytearray at the end and flip it to little endian
-                    dseg += struct.pack('<h', get_imm(decl))
+                    dseg += struct.pack('>h', get_imm(decl))
                 elif ty == '.word':
                     # re: big endian, see above
-                    dseg += struct.pack('<i', get_imm(decl))
+                    dseg += struct.pack('>i', get_imm(decl))
                 else:
                     raise Exception('bad declaration type')
                 offset += size
+
+        datatab[label] = offset
 
     # at this point offset contains the complete size of the data section,
     # and we can use that to transform the datatab values from data section
@@ -153,7 +153,7 @@ def get_args():
     parser = argparse.ArgumentParser(description='Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS source file as argument.')
     parser.add_argument('file', metavar='FILE', type=str,
                         help='MIPS source file', nargs='?')
-    parser.add_argument('--memory', type=int, help='Data memory size',
+    parser.add_argument('--stack', type=int, help='Stack memory size',
                         default=64)
     return parser.parse_args()
 
@@ -164,10 +164,10 @@ def main():
     if args.file:
         with open(args.file) as f:
             source = f.readlines()
-        cpu = CPU(*generate_memory(source, args.memory))
+        cpu = CPU(*generate_memory(source, args.stack))
         cpu.start()
     else:
-        cpu = CPU(Memory(args.memory))
+        cpu = CPU(Memory(args.stack))
         while True:
             inp = raw_input('spym > ').strip()
             if inp == 'exit':
