@@ -25,16 +25,22 @@ class Memory(object):
         return len(self.memory)
 
     def dump(self):
-        for i in range(self.size() - 1, 0, -8):
-            word = self.memory[i:i-4:-1]
-            word2 = self.memory[i-4:i-8:-1]
-            print '{:04x}  {} {}  {} {}'.format(i, binascii.hexlify(word),
-                                                binascii.hexlify(word2),
-                                                self._print_version(word),
-                                                self._print_version(word2))
+        fmt = '{:04x}  {}{} {}{}  {} {}'
+        for i in range(self.size()-1, -1, -8):
+            word = self.memory[i:i-4:-1] if i >= 4 else self.memory[i::-1]
+            word2 = self.memory[i-4:i-8:-1] if i >= 8 else self.memory[i-4::-1] if i >= 5 else ''
+
+            print fmt.format(i, binascii.hexlify(word), self._pad(word),
+                             binascii.hexlify(word2), self._pad(word2),
+                             self._print_version(word),
+                             self._print_version(word2))
+
+    def _pad(self, str):
+        # str is the 4 byte string, occupying 8 characters when hexlified.
+        return ' ' * (8-len(str)*2)
 
     def _print_version(self, word):
         ret = ''
         for char in word:
-            ret += chr(char) if char > 0x20 and char < 0x7f  else '.'
+            ret += chr(char) if char > 0x20 and char < 0x7f else '.'
         return ret
