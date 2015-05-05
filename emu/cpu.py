@@ -207,6 +207,11 @@ class CPU(object):
             rd = instr.ops[0]
             imm = self._get_imm(instr.ops[1])
             self.r.write(rd, imm)
+        elif instr.name == 'la':
+            # la rd, label
+            rd = instr.ops[0]
+            label = instr.ops[1]
+            self.r.write(rd, datatab[label])
         elif instr.name == 'sb':
             # sb rt, offs(rs)
             rt = self.r.read(instr.ops[0])
