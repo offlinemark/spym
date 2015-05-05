@@ -3,6 +3,7 @@ import struct
 from registers import Registers
 
 labeltab = {}
+datatab = {}
 
 
 class CPU(object):

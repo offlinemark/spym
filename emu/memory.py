@@ -1,4 +1,6 @@
 class Memory(object):
+    """Generic memory abstaction."""
+
     def __init__(self, size):
         self.size = size
         self.memory = bytearray([0] * size)
