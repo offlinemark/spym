@@ -119,7 +119,7 @@ def generate_memory(source, dmem_size):
     imem = []
 
     # filter out empty lines and comments and strip everything else
-    source = map(lambda x: x.strip(),
+    source = map(lambda x: x.split('#')[0].strip(),
                  filter(lambda x: x.strip() and not x.strip().startswith('#'),
                         source))
 
