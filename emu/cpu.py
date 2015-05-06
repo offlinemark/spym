@@ -293,7 +293,15 @@ class CPU(object):
                 raise Exception('exit syscall')
             elif id == 1:
                 # print_int
-                log.critical(self.r.read('a0'),)
+                # not using log here because this will always show up and we
+                # want to suppress newline
+                print self.r.read('a0'),
+            elif id == 4:
+                # print_string
+                ptr = self.r.read('a0')
+                null = self.dmem.memory.find('\x00', ptr)
+                # not using log here, see above
+                print self.dmem.memory[ptr:None if null == -1 else null],
             elif id == 5:
                 # read_int
                 try:
