@@ -296,12 +296,14 @@ class CPU(object):
                 # not using log here because this will always show up and we
                 # want to suppress newline
                 print self.r.read('a0'),
+                sys.stdout.flush()
             elif id == 4:
                 # print_string
                 ptr = self.r.read('a0')
                 null = self.dmem.memory.find('\x00', ptr)
                 # not using log here, see above
                 print self.dmem.memory[ptr:None if null == -1 else null],
+                sys.stdout.flush()
             elif id == 5:
                 # read_int
                 try:
