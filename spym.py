@@ -38,7 +38,7 @@ def main():
         dmem = Memory(args.stack)
         if dseg:
             dmem.memory = parse.data(dseg) + dmem.memory
-        cpu = CPU(dmem, parse.text(tseg))
+        cpu = CPU(dmem, parse.text_list(tseg))
         cpu.start(args.debug)
     else:
         cpu = CPU(Memory(args.stack))

@@ -76,7 +76,7 @@ def data(data_segment):
     return dseg
 
 
-def text(text_segment):
+def text_list(text_segment):
     """Parses the .text segment source
 
     Args:
@@ -107,6 +107,11 @@ def text(text_segment):
             imem.append(Instruction(each))
 
     return imem
+
+
+def text_binary(text_segment):
+    # stub
+    return bytearray('INSTRUCTIONS')
 
 
 def segments(source):
