@@ -2,8 +2,8 @@
 
 import argparse
 
-import assemble
-import util
+from util.assemble import assemble
+from util.hexdump import hexdump
 
 
 def get_args():
@@ -22,7 +22,7 @@ def main():
         fname = fname + '.spym'
     # with open(fname, 'w') as f:
     with open(args.file) as ff:
-        util.hexdump(assemble.assemble(ff.readlines()))
+        hexdump(assemble(ff.readlines()))
 
 if __name__ == '__main__':
     main()

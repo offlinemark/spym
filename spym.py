@@ -3,7 +3,7 @@
 import argparse
 import logging as log
 
-import parse
+import util.parse
 from emu.cpu import CPU
 from emu.instruction import Instruction
 from emu.memory import Memory
@@ -34,11 +34,11 @@ def main():
     if args.file:
         with open(args.file) as f:
             source = f.readlines()
-        dseg, tseg = parse.segments(source)
+        dseg, tseg = util.parse.segments(source)
         dmem = Memory(args.stack)
         if dseg:
-            dmem.memory = parse.data(dseg) + dmem.memory
-        cpu = CPU(dmem, parse.text_list(tseg))
+            dmem.memory = util.parse.data(dseg) + dmem.memory
+        cpu = CPU(dmem, util.parse.text_list(tseg))
         cpu.start(args.debug)
     else:
         cpu = CPU(Memory(args.stack))
