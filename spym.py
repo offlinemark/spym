@@ -155,6 +155,8 @@ def get_args():
                         help='MIPS source file', nargs='?')
     parser.add_argument('--stack', type=int, help='Stack memory size',
                         default=64)
+    parser.add_argument('--debug', help='Activate debugger',
+                        action='store_true')
     return parser.parse_args()
 
 
@@ -165,7 +167,7 @@ def main():
         with open(args.file) as f:
             source = f.readlines()
         cpu = CPU(*generate_memory(source, args.stack))
-        cpu.start()
+        cpu.start(args.debug)
     else:
         cpu = CPU(Memory(args.stack))
         while True:

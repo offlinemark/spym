@@ -1,3 +1,4 @@
+import sys
 import struct
 
 from registers import Registers
@@ -12,8 +13,14 @@ class CPU(object):
         self.dmem = dmem
         self.imem = imem
 
-    def start(self):
+    def start(self, debug):
         print '=== CPU Start===\n'
+
+        if debug:
+            last = ''
+            cmds = ['?', '(p)rint $reg', '(c)ontinue', '(d)ump', '(n)ext',
+                    '(q)uit']
+            print "*** debug mode enabled. '?' for help ***\n"
 
         if self.imem is None:
             raise Exception('imem not set')
@@ -21,7 +28,31 @@ class CPU(object):
         while self.r.pc in xrange(len(self.imem)):
             instr = self.imem[self.r.pc]
             try:
-                print '[{}] {}'.format(self.r.pc, instr.raw) 
+                print '[{}] {}'.format(self.r.pc, instr.raw)
+                if debug:
+                    while True:
+                        inp = raw_input('(debug) ').strip()
+
+                        if not inp:
+                            inp = last
+                        else:
+                            last = inp
+
+                        if inp == '?':
+                            print 'Commands:', ', '.join(cmds)
+                        elif inp in ['d', 'dump']:
+                            self.dump()
+                        elif inp in ['c', 'continue']:
+                            debug = False
+                            break
+                        elif inp in ['n', 'next']:
+                            break
+                        elif inp in ['q', 'quit']:
+                            sys.exit()
+                        elif inp.split()[0] in ['p', 'print']:
+                            print self.r.read(inp.split()[1][1:])
+                        else:
+                            print 'Bad Command'
                 self.execute_single(instr)
             except Exception, e:
                 if e.message == 'exit syscall':
