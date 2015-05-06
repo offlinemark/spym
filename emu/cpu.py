@@ -310,7 +310,7 @@ class CPU(object):
         print '\n=== CPU Dump ==='
         print '\nRegisters\n'
         self.r.dump()
-        print '\nData Memory\n'
+        print '\nData/Stack Memory\n'
         self.dmem.dump()
 
     def _set_pc_label(self, label):
