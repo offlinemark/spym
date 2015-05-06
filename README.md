@@ -1,78 +1,155 @@
 # spym
 
-A little Harvard architecture MIPS interpreter.
+A little Harvard architecture MIPS interpreter that runs MIPS source files and
+offers basic GDB-style debugging.
 
 ## Usage
 
 ```
-usage: spym.py [-h] [--memory MEMORY] [FILE]
+$ ./spym.py -h
+usage: spym.py [-h] [--stack STACK] [--debug] [FILE]
 
 Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS
 source file as argument.
 
 positional arguments:
-  FILE             MIPS source file
+  FILE           MIPS source file
 
 optional arguments:
-  -h, --help       show this help message and exit
-  --memory MEMORY  Data memory size
+  -h, --help     show this help message and exit
+  --stack STACK  Stack memory size
+  --debug        Activate debugger
 ```
 
 ## Example
 
 ```
 $ cat test.s
-# test mips program
+# mips factorial calculator
 
-# equivalent pseudo-C:
+# pseudo-C:
 #
-# int main() {
-#     int x;
-#     func(&x);
-#     print_int(x);
-#     exit();
-# }
+# int input = 5;
 #
-# void func(int *y) {
-#     *y = 0xffff;
+# main() {
+#     int count = input;
+#     int tmp = 1;
+#
+#     while (count) {
+#         tmp *= count;
+#         count--;
+#     }
+#
+#     print_int(tmp);
 # }
+
+.data
+input: .word 5
+
+.text
 
 main:
-    addi $sp, $sp, -4
-    move $a0, $sp
-    jal func
-    li $v0, 1
-    lw $a0, 0($a0)
-    syscall
-    li $v0, 10
-    syscall
+    addi $sp, $sp, -8
+    move $t0, $sp  # count
+    addi $t1, $sp, 4  # tmp
 
-func:
-    li $t0, 0xffff
-    sw $t0, 0($a0)
-    jr $ra
-$ ./spym.py --memory 8 test.s
+    la $s0, input
+    lw $s0, 0($s0)
+
+    sw $s0, 0($t0)
+    li $t3, 1
+    sw $t3, 0($t1)
+
+cond:
+    lw $t3, 0($t0)
+    bne $t3, $zero, body
+    j end
+
+body:
+    lw $t4, 0($t1)
+    mult $t4, $t3
+    mflo $t5
+    sw $t5, 0($t1)
+    addi $t3, $t3, -1
+    sw $t3, 0($t0)
+    j cond
+
+end:
+    li $v0, 1
+    lw $t2, 0($t1)
+    move $a0, $t2
+    syscall
+$ ./spympy test.s --stack 8
 === CPU Start===
 
-[0] addi $sp, $sp, -4
-[1] move $a0, $sp
-[2] jal func
-[8] li $t0, 0xffff
-[9] sw $t0, 0($a0)
-[10] jr $ra
-[3] li $v0, 1
-[4] lw $a0, 0($a0)
-[5] syscall
-65535 [6] li $v0, 10
-[7] syscall
-
-*** exiting ***
+[0] addi $sp, $sp, -8
+[1] move $t0, $sp
+[2] addi $t1, $sp, 4
+[3] la $s0, input
+[4] lw $s0, 0($s0)
+[5] sw $s0, 0($t0)
+[6] li $t3, 1
+[7] sw $t3, 0($t1)
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[10] j end
+[18] li $v0, 1
+[19] lw $t2, 0($t1)
+[20] move $a0, $t2
+[21] syscall
+120
+*** pc [22] outside instruction memory ***
 
 === CPU Dump ===
 
 Registers
 
-$a0/4 : 65535
+$a0/4 : 120
 $a1/5 : 0
 $a2/6 : 0
 $a3/7 : 0
@@ -80,8 +157,8 @@ $fp/30 : 0
 $gp/28 : 0
 $k0/26 : 0
 $k1/27 : 0
-$ra/31 : 3
-$s0/16 : 0
+$ra/31 : 0
+$s0/16 : 5
 $s1/17 : 0
 $s2/18 : 0
 $s3/19 : 0
@@ -90,8 +167,78 @@ $s5/21 : 0
 $s6/22 : 0
 $s7/23 : 0
 $sp/29 : 4
-$t0/8 : 65535
-$t1/9 : 0
+$t0/8 : 4
+$t1/9 : 8
+$t2/10 : 120
+$t3/11 : 0
+$t4/12 : 120
+$t5/13 : 120
+$t6/14 : 0
+$t7/15 : 0
+$t8/24 : 0
+$t9/25 : 0
+$v0/2 : 1
+$v1/3 : 0
+$zero/0 : 0
+pc : 22
+hi : 0
+lo : 120
+
+Data/Stack Memory
+
+0000: 05000000 00000000  .... ....
+0008: 78000000           x...
+```
+
+## Debug Mode
+
+```
+$ ./spym.py test.s --stack 8 --debug
+=== CPU Start===
+
+*** debug mode enabled. '?' for help ***
+
+[0] addi $sp, $sp, -8
+(debug) n
+[1] move $t0, $sp
+(debug)
+[2] addi $t1, $sp, 4
+(debug)
+[3] la $s0, input
+(debug)
+[4] lw $s0, 0($s0)
+(debug)
+[5] sw $s0, 0($t0)
+(debug)
+[6] li $t3, 1
+(debug) p $s0
+5
+(debug) dump
+
+=== CPU Dump ===
+
+Registers
+
+$a0/4 : 0
+$a1/5 : 0
+$a2/6 : 0
+$a3/7 : 0
+$fp/30 : 0
+$gp/28 : 0
+$k0/26 : 0
+$k1/27 : 0
+$ra/31 : 0
+$s0/16 : 5
+$s1/17 : 0
+$s2/18 : 0
+$s3/19 : 0
+$s4/20 : 0
+$s5/21 : 0
+$s6/22 : 0
+$s7/23 : 0
+$sp/29 : 4
+$t0/8 : 4
+$t1/9 : 8
 $t2/10 : 0
 $t3/11 : 0
 $t4/12 : 0
@@ -100,12 +247,115 @@ $t6/14 : 0
 $t7/15 : 0
 $t8/24 : 0
 $t9/25 : 0
-$v0/2 : 10
+$v0/2 : 0
 $v1/3 : 0
 $zero/0 : 0
-pc : 7
+pc : 6
+hi : 0
+lo : 0
 
-Data Memory
+Data/Stack Memory
 
-bytearray(b'\x00\x00\x00\x00\xff\xff\x00\x00')
+0000: 05000000 05000000  .... ....
+0008: 00000000           ....
+(debug) c
+[7] sw $t3, 0($t1)
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[11] lw $t4, 0($t1)
+[12] mult $t4, $t3
+[13] mflo $t5
+[14] sw $t5, 0($t1)
+[15] addi $t3, $t3, -1
+[16] sw $t3, 0($t0)
+[17] j cond
+[8] lw $t3, 0($t0)
+[9] bne $t3, $zero, body
+[10] j end
+[18] li $v0, 1
+[19] lw $t2, 0($t1)
+[20] move $a0, $t2
+[21] syscall
+120
+*** pc [22] outside instruction memory ***
+
+=== CPU Dump ===
+
+Registers
+
+$a0/4 : 120
+$a1/5 : 0
+$a2/6 : 0
+$a3/7 : 0
+$fp/30 : 0
+$gp/28 : 0
+$k0/26 : 0
+$k1/27 : 0
+$ra/31 : 0
+$s0/16 : 5
+$s1/17 : 0
+$s2/18 : 0
+$s3/19 : 0
+$s4/20 : 0
+$s5/21 : 0
+$s6/22 : 0
+$s7/23 : 0
+$sp/29 : 4
+$t0/8 : 4
+$t1/9 : 8
+$t2/10 : 120
+$t3/11 : 0
+$t4/12 : 120
+$t5/13 : 120
+$t6/14 : 0
+$t7/15 : 0
+$t8/24 : 0
+$t9/25 : 0
+$v0/2 : 1
+$v1/3 : 0
+$zero/0 : 0
+pc : 22
+hi : 0
+lo : 120
+
+Data/Stack Memory
+
+0000: 05000000 00000000  .... ....
+0008: 78000000           x...
 ```
