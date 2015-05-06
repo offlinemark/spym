@@ -7,7 +7,7 @@ offers basic GDB-style debugging.
 
 ```
 $ ./spym.py -h
-usage: spym.py [-h] [--stack STACK] [--debug] [FILE]
+usage: spym.py [-h] [--stack STACK] [--debug] [-v] [FILE]
 
 Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS
 source file as argument.
@@ -18,7 +18,8 @@ positional arguments:
 optional arguments:
   -h, --help     show this help message and exit
   --stack STACK  Stack memory size
-  --debug        Activate debugger
+  --debug        Activate debugger. Implies verbose.
+  -v, --verbose  Verbose output
 ```
 
 ## Example
@@ -79,7 +80,7 @@ end:
     lw $t2, 0($t1)
     move $a0, $t2
     syscall
-$ ./spympy test.s --stack 8
+$ ./spym.py test.s --stack 8 -v
 === CPU Start===
 
 [0] addi $sp, $sp, -8
@@ -193,7 +194,7 @@ Data/Stack Memory
 ## Debug Mode
 
 ```
-$ ./spym.py test.s --stack 8 --debug
+$ ./spym.py test.s --stack 8 --debug -v
 === CPU Start===
 
 *** debug mode enabled. '?' for help ***
