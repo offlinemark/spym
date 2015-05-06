@@ -114,10 +114,8 @@ def parse_text(text_segment):
     return imem
 
 
-def generate_memory(source, dmem_size):
+def parse_segments(source):
     directive_regex = re.compile('^\s*.(data|text)\s*$')
-    dmem = Memory(dmem_size)
-    imem = []
 
     # filter out empty lines and comments and strip everything else
     source = map(lambda x: x.split('#')[0].strip(),
@@ -135,19 +133,17 @@ def generate_memory(source, dmem_size):
         # it's text
         if source[0] != '.text':
             raise Exception('.text directive must be first line')
-        imem = parse_text(source)
+        return None, source
     else:
         # it's text and data
         first = source.index(directs[0])
         second = source.index(directs[1])
         # we've partitioned but we don't know which is which
         split = source[first:second], source[second:]
-        split = split if split[0][0] == '.text' else split[::-1]
+        if split[0][0] == '.text':
+            split = split[::-1]
 
-        imem = parse_text(split[0])
-        dmem.memory = parse_data(split[1]) + dmem.memory
-
-    return dmem, imem
+        return split
 
 
 def get_args():
@@ -172,7 +168,11 @@ def main():
     if args.file:
         with open(args.file) as f:
             source = f.readlines()
-        cpu = CPU(*generate_memory(source, args.stack))
+        dseg, tseg = parse_segments(source)
+        dmem = Memory(args.stack)
+        if dseg:
+            dmem.memory = parse_data(dseg) + dmem.memory
+        cpu = CPU(dmem, parse_text(tseg))
         cpu.start(args.debug)
     else:
         cpu = CPU(Memory(args.stack))
