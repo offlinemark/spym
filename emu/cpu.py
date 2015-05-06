@@ -1,5 +1,6 @@
 import sys
 import struct
+import logging as log
 
 from registers import Registers
 
@@ -14,13 +15,13 @@ class CPU(object):
         self.imem = imem
 
     def start(self, debug):
-        print '=== CPU Start===\n'
+        log.critical('=== CPU Start ===\n')
 
         if debug:
             last = ''
             cmds = ['?', '(p)rint $reg', '(c)ontinue', '(d)ump', '(n)ext',
                     '(q)uit']
-            print "*** debug mode enabled. '?' for help ***\n"
+            log.info("*** debug mode enabled. '?' for help ***\n")
 
         if self.imem is None:
             raise Exception('imem not set')
@@ -28,7 +29,7 @@ class CPU(object):
         while self.r.pc in xrange(len(self.imem)):
             instr = self.imem[self.r.pc]
             try:
-                print '[{}] {}'.format(self.r.pc, instr.raw)
+                log.info('[{}] {}'.format(self.r.pc, instr.raw))
                 if debug:
                     while True:
                         inp = raw_input('(debug) ').strip()
@@ -39,7 +40,7 @@ class CPU(object):
                             last = inp
 
                         if inp == '?':
-                            print 'Commands:', ', '.join(cmds)
+                            log.info('Commands:', ', '.join(cmds))
                         elif inp in ['d', 'dump']:
                             self.dump()
                         elif inp in ['c', 'continue']:
@@ -50,16 +51,16 @@ class CPU(object):
                         elif inp in ['q', 'quit']:
                             sys.exit()
                         elif inp.split()[0] in ['p', 'print']:
-                            print self.r.read(inp.split()[1][1:])
+                            log.info(self.r.read(inp.split()[1][1:]))
                         else:
-                            print 'Bad Command'
+                            log.error('Bad Command')
                 self.execute_single(instr)
             except Exception, e:
                 if e.message == 'exit syscall':
                     return
                 raise e
             self.r.pc += 1
-        print '\n*** pc [{}] outside instruction memory ***'.format(self.r.pc)
+        log.critical('\n*** pc [{}] outside instruction memory ***'.format(self.r.pc))
 
     def execute_single(self, instr):
         if instr.name == 'add':
@@ -288,11 +289,11 @@ class CPU(object):
             id = self.r.read('v0')
             if id == 10:
                 # exit
-                print '\n*** exiting ***'
+                log.critical('\n*** exiting ***')
                 raise Exception('exit syscall')
             elif id == 1:
                 # print_int
-                print self.r.read('a0'),
+                log.critical(self.r.read('a0'),)
             elif id == 5:
                 # read_int
                 try:
@@ -307,10 +308,10 @@ class CPU(object):
             raise Exception('bad instruction')
 
     def dump(self):
-        print '\n=== CPU Dump ==='
-        print '\nRegisters\n'
+        log.info('\n=== CPU Dump ===')
+        log.info('\nRegisters\n')
         self.r.dump()
-        print '\nData/Stack Memory\n'
+        log.info('\nData/Stack Memory\n')
         self.dmem.dump()
 
     def _set_pc_label(self, label):

@@ -1,4 +1,5 @@
 import binascii
+import logging as log
 
 
 class Memory(object):
@@ -33,10 +34,10 @@ class Memory(object):
             word = self.memory[i:i+4] if i <= self.size() - 4 else self.memory[i:]
             word2 = self.memory[i+4:i+8] if i <= self.size() - 8 else self.memory[i+4:]
 
-            print fmt.format(i, binascii.hexlify(word), self._pad(word),
-                             binascii.hexlify(word2), self._pad(word2),
-                             self._print_version(word),
-                             self._print_version(word2))
+            log.info(fmt.format(i, binascii.hexlify(word), self._pad(word),
+                                binascii.hexlify(word2), self._pad(word2),
+                                self._print_version(word),
+                                self._print_version(word2)))
 
     def _pad(self, str):
         # str is the 4 byte string, occupying 8 characters when hexlified.

@@ -1,3 +1,5 @@
+import logging as log
+
 class Registers(object):
     regtab = {
         'v0': 2, 'v1': 3,
@@ -32,8 +34,8 @@ class Registers(object):
 
     def dump(self):
         for reg in sorted(self.regtab):
-            print '${}/{} : {}\t\t'.format(reg, self.regtab[reg],
-                                           self.gpr[self.regtab[reg]])
-        print 'pc : {}'.format(self.pc)
-        print 'hi : {}'.format(self.hi)
-        print 'lo : {}'.format(self.lo)
+            log.info('${}/{} : {}\t\t'.format(reg, self.regtab[reg],
+                                              self.gpr[self.regtab[reg]]))
+        log.info('pc : {}'.format(self.pc))
+        log.info('hi : {}'.format(self.hi))
+        log.info('lo : {}'.format(self.lo))

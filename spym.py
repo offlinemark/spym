@@ -3,6 +3,7 @@
 import re
 import struct
 import argparse
+import logging as log
 
 from emu.cpu import CPU, labeltab, datatab
 from emu.instruction import Instruction
@@ -155,13 +156,18 @@ def get_args():
                         help='MIPS source file', nargs='?')
     parser.add_argument('--stack', type=int, help='Stack memory size',
                         default=64)
-    parser.add_argument('--debug', help='Activate debugger',
+    parser.add_argument('--debug', help='Activate debugger. Implies verbose.',
+                        action='store_true')
+    parser.add_argument('-v', '--verbose', help='Verbose output',
                         action='store_true')
     return parser.parse_args()
 
 
 def main():
     args = get_args()
+
+    lvl = log.INFO if args.verbose or args.debug else None
+    log.basicConfig(format='%(message)s', level=lvl)
 
     if args.file:
         with open(args.file) as f:
