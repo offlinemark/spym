@@ -1,5 +1,4 @@
-import binascii
-import logging as log
+import util
 
 
 class Memory(object):
@@ -28,23 +27,4 @@ class Memory(object):
         return len(self.memory)
 
     def dump(self):
-        fmt = '{:04x}: {}{} {}{}  {} {}'
-
-        for i in range(0, self.size(), 8):
-            word = self.memory[i:i+4] if i <= self.size() - 4 else self.memory[i:]
-            word2 = self.memory[i+4:i+8] if i <= self.size() - 8 else self.memory[i+4:]
-
-            log.info(fmt.format(i, binascii.hexlify(word), self._pad(word),
-                                binascii.hexlify(word2), self._pad(word2),
-                                self._print_version(word),
-                                self._print_version(word2)))
-
-    def _pad(self, str):
-        # str is the 4 byte string, occupying 8 characters when hexlified.
-        return ' ' * (8-len(str)*2)
-
-    def _print_version(self, word):
-        ret = ''
-        for char in word:
-            ret += chr(char) if char > 0x20 and char < 0x7f else '.'
-        return ret
+        util.hexdump(self.memory)
