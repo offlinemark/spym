@@ -27,4 +27,4 @@ class Memory(object):
         return len(self.memory)
 
     def dump(self):
-        util.hexdump(self.memory)
+        util.hexdump(self.memory, True)
