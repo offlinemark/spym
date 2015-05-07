@@ -18,7 +18,7 @@ class CPU(object):
         log.critical('=== CPU Start ===\n')
 
         if debug:
-            last = ''
+            last = '?'
             cmds = ['?', '(p)rint $reg', '(c)ontinue', '(d)ump', '(n)ext',
                     '(q)uit']
             log.info("*** debug mode enabled. '?' for help ***\n")
@@ -39,8 +39,8 @@ class CPU(object):
                         else:
                             last = inp
 
-                        if inp == '?':
-                            log.info('Commands:', ', '.join(cmds))
+                        if inp in ['?', 'help']:
+                            log.info('Commands: ' + ', '.join(cmds))
                         elif inp in ['d', 'dump']:
                             self.dump()
                         elif inp in ['c', 'continue']:
