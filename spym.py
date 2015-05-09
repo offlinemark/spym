@@ -28,10 +28,10 @@ def get_args():
 def main():
     args = get_args()
 
-    lvl = log.INFO if args.verbose or args.debug else None
-    log.basicConfig(format='%(message)s', level=lvl)
-
     if args.file:
+        lvl = log.INFO if args.verbose or args.debug else None
+        log.basicConfig(format='%(message)s', level=lvl)
+
         with open(args.file) as f:
             source = f.readlines()
         dseg, tseg = parse.segments(source)
@@ -41,12 +41,14 @@ def main():
         cpu = CPU(dmem, parse.text_list(tseg))
         cpu.start(args.debug)
     else:
+        log.basicConfig(format='%(message)s', level=log.INFO)
         cpu = CPU(Memory(args.stack))
         while True:
             inp = raw_input('spym > ').strip()
             if inp == 'exit':
                 break
             elif inp == 'dump':
+                print 123
                 cpu.dump()
                 continue
             elif not inp:

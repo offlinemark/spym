@@ -111,7 +111,29 @@ def text_list(text_segment):
 
 def text_binary(text_segment):
     # stub
-    return bytearray('INSTRUCTIONS')
+    # return bytearray('INSTRUCTIONS')
+    label_regex = re.compile('^\w+:$')
+    processed_labels = 0
+    imem = bytearray()
+    for i, each in enumerate(text_segment[1:]):
+
+        if label_regex.match(each):
+            key = each.split(':')[0]
+            if key in labeltab:
+                raise Exception('label already used')
+            # i here indexes into a list containing labels, however those
+            # labels will not be present in the final list. to ensure that
+            # the imem address stored in labeltab refers to the correct
+            # index in the final list, subtract it by the number of labels
+            # that occur above the current one which have been artifically
+            # increasing the index
+            labeltab[key] = i - processed_labels
+            processed_labels += 1
+        else:
+            for instr in Instruction(each).to_binary():
+                imem += struct.pack('>I', instr.value)
+
+    return imem
 
 
 def segments(source):
