@@ -70,7 +70,7 @@ class CPU(object):
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs + rt)
         elif instr.name == 'addi':
-            # addi rd, rs, imm
+            # addi rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             imm = self._get_imm(instr.ops[2])
@@ -88,7 +88,7 @@ class CPU(object):
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs & rt)
         elif instr.name == 'andi':
-            # andi rd, rs, imm
+            # andi rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             imm = self._get_imm(instr.ops[2])
@@ -100,7 +100,7 @@ class CPU(object):
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs | rt)
         elif instr.name == 'ori':
-            # ori rd, rs, imm
+            # ori rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             imm = self._get_imm(instr.ops[2])
@@ -112,29 +112,29 @@ class CPU(object):
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs ^ rt)
         elif instr.name == 'xori':
-            # xori rd, rs, imm
+            # xori rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             imm = self._get_imm(instr.ops[2])
             self.r.write(rd, rs ^ imm)
         elif instr.name == 'sll':
-            # sll rd, rs, shamt
+            # sll rd, rt, shamt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             shamt = self._get_imm(instr.ops[2])
-            self.r.write(rd, rs << shamt)
+            self.r.write(rd, rt << shamt)
         elif instr.name == 'srl':
-            # srl rd, rs, shamt
+            # srl rd, rt, shamt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             shamt = self._get_imm(instr.ops[2])
-            self.r.write(rd, rs >> shamt)
+            self.r.write(rd, rt >> shamt)
         elif instr.name == 'sllv':
-            # sllv rd, rs, rt
+            # sllv rd, rt, rs
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
             rt = self.r.read(instr.ops[2])
-            self.r.write(rd, rs << rt)
+            self.r.write(rd, rt << rs)
         elif instr.name == 'srlv':
             # srlv rd, rs, rt
             rd = instr.ops[0]
