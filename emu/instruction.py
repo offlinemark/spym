@@ -1,14 +1,7 @@
 import re
 
-from emu.cpu import labeltab
 from emu.registers import regmap
-
-# number of extra instructions caused by pseudo instruction expansion
-pseudocount = 0
-
-
-def get_imm(imm):
-    return int(imm, 16) if imm.startswith('0x') else int(imm)
+from util.misc import get_imm
 
 
 class Instruction(object):
@@ -42,12 +35,16 @@ class Instruction(object):
 
         bins = []
         bini = BinaryInstruction()
+
         if self.name == 'add':
             # add rd, rs, rt
             bini.set_arith(0x20, self.ops)
         elif self.name == 'addi':
             # addi rt, rs, imm
             bini.set_arith_imm(0x8, self.ops)
+        elif self.name == 'addiu':
+            # addiu rt, rs, imm
+            bini.set_arith_imm(0x9, self.ops)
         elif self.name == 'sub':
             # sub rd, rs, rt
             bini.set_arith(0x22, self.ops)
@@ -73,13 +70,13 @@ class Instruction(object):
             # sll rd, rt, shamt
             bini.set_rd(self.ops[0])
             bini.set_rt(self.ops[1])
-            bini.set_shamt_str(self.ops[2])
+            bini.set_shamt(self.ops[2])
         elif self.name == 'srl':
             # srl rd, rt, shamt
             bini.set_funct(0x2)
             bini.set_rd(self.ops[0])
             bini.set_rt(self.ops[1])
-            bini.set_shamt_str(self.ops[2])
+            bini.set_shamt(self.ops[2])
         elif self.name == 'sllv':
             # sllv rd, rt, rs
             bini.set_funct(0x4)
@@ -101,9 +98,15 @@ class Instruction(object):
         elif self.name == 'beq':
             # beq rs, rt, label
             bini.set_opcode(0x4)
+            bini.set_rs(self.ops[0])
+            bini.set_rt(self.ops[1])
+            bini.set_imm(resolve(self.ops[2]))
         elif self.name == 'bne':
             # bne rs, rt, label
             bini.set_opcode(0x5)
+            bini.set_rs(self.ops[0])
+            bini.set_rt(self.ops[1])
+            bini.set_imm(resolve(self.ops[2]))
         elif self.name == 'blt':
             # pseudo: blt rs, rt, label
             # slt $1, rs, rt
@@ -112,7 +115,6 @@ class Instruction(object):
                                                         self.ops[1])).to_binary()[0]
             bins.append(slt)
             bini = Instruction('bne $1, $0, {}'.format(self.ops[2])).to_binary()[0]
-            pseudocount += 1
         elif self.name == 'bgt':
             # pseudo: bgt rs, rt, label
             # slt $1, rt, rs
@@ -121,7 +123,6 @@ class Instruction(object):
                                                         self.ops[0])).to_binary()[0]
             bins.append(slt)
             bini = Instruction('bne $1, $0, {}'.format(self.ops[2])).to_binary()[0]
-            pseudocount += 1
         elif self.name == 'ble':
             # pseudo: ble rs, rt, label
             # slt $1, rt, rs
@@ -130,7 +131,6 @@ class Instruction(object):
                                                         self.ops[0])).to_binary()[0]
             bins.append(slt)
             bini = Instruction('beq $1, $0, {}'.format(self.ops[2])).to_binary()[0]
-            pseudocount += 1
         elif self.name == 'bge':
             # pseudo: bge rs, rt, label
             # slt $1, rs, rt
@@ -139,34 +139,36 @@ class Instruction(object):
                                                         self.ops[1])).to_binary()[0]
             bins.append(slt)
             bini = Instruction('beq $1, $0, {}'.format(self.ops[2])).to_binary()[0]
-            pseudocount += 1
         elif self.name == 'j':
             # j label
             bini.set_opcode(0x2)
-            bini.set_imm(labeltab[self.ops[0]] + pseudocount)
+            bini.set_imm(resolve(self.ops[0]))
         elif self.name == 'jal':
             # jal label
             bini.set_opcode(0x3)
-            bini.set_imm(labeltab[self.ops[0]] + pseudocount)
+            bini.set_imm(resolve(self.ops[0]))
         elif self.name == 'jr':
             # jr rs
             bini.set_funct(0x8)
-            bini.set_rs(regmap(self.ops[0]))
+            bini.set_rs(self.ops[0])
         elif self.name == 'jalr':
             # jalr rs
             bini.set_funct(0x9)
+            bini.set_rs(self.ops[0])
+            # TODO: support 2 operand jalr
+            bini.set_rd(31)
         elif self.name == 'lb':
             # lb rt, offs(rs)
-            bini.set_opcode(0x20)
+            bini.set_mem(0x20, self.ops)
         elif self.name == 'lbu':
             # lbu rt, offs(rs)
-            bini.set_opcode(0x24)
+            bini.set_mem(0x24, self.ops)
         elif self.name == 'lh':
             # lh rt, offs(rs)
-            bini.set_opcode(0x21)
+            bini.set_mem(0x21, self.ops)
         elif self.name == 'lhu':
             # lhu rt, offs(rs)
-            bini.set_opcode(0x25)
+            bini.set_mem(0x25, self.ops)
         elif self.name == 'lw':
             # TODO: lw will always treat that memory as signed, even when it
             # potentially should be unsigned? With sw we can detect if they're
@@ -174,15 +176,21 @@ class Instruction(object):
             # arg accordingly, but with lw, we have no indication
 
             # lw rt, offs(rs)
-            bini.set_opcode(0x23)
+            bini.set_mem(0x23, self.ops)
         elif self.name == 'lui':
             # lui rt, imm
             bini.set_opcode(0xf)
+            bini.set_rt(self.ops[0])
+            bini.set_imm(self.ops[1])
         elif self.name == 'li':
             # li rd, imm
-            pass
+            bini = Instruction('addiu {}, $0, {}'.format(self.ops[0],
+                                                        self.ops[1])).to_binary()[0]
         elif self.name == 'la':
             # la rd, label
+            # lui = Instruction('lui $1, 0x{:x}'.format(
+                # merge datatab and labeltab into symtab. keep colons at end
+                # of labeltab labels so you can tell the diff.
             pass
         elif self.name == 'sb':
             # sb rt, offs(rs)
@@ -227,6 +235,13 @@ class Instruction(object):
         return bins
 
 
+# stupid hack: this import line is down here because of dumb circular import
+# problems. instruction -> assemble -> parse -> instruction, and by the time
+# parse tries to load Instruction, the original instruction import hasn't
+# made it that far down
+from util.assemble import resolve
+
+
 class BinaryInstruction(object):
     def __init__(self):
         self.value = 0
@@ -241,43 +256,50 @@ class BinaryInstruction(object):
         self.set_opcode(opcode)
         self.set_rt(ops[0])
         self.set_rs(ops[1])
-        self.set_imm_str(ops[2])
+        self.set_imm(ops[2])
+
+    def set_mem(self, opcode, ops):
+        self.set_opcode(opcode)
+        self.set_rt(ops[0])
+        self.set_imm(ops[1])
+        self.set_rs(ops[2])
 
     def set_opcode(self, opcode):
         self._or_shift(opcode, 26)
 
-    def set_rs(self, rsstr):
-        self._set_rs(regmap(rsstr))
+    def set_rs(self, rs):
+        try:
+            self._or_shift(rs, 21)
+        except TypeError:
+            self._or_shift(regmap(rs), 21)
 
-    def set_rt(self, rtstr):
-        self._set_rt(regmap(rtstr))
+    def set_rt(self, rt):
+        try:
+            self._or_shift(rt, 16)
+        except TypeError:
+            self._or_shift(regmap(rt), 16)
 
-    def set_rd(self, rdstr):
-        self._set_rd(regmap(rdstr))
+    def set_rd(self, rd):
+        try:
+            self._or_shift(rd, 11)
+        except TypeError:
+            self._or_shift(regmap(rd), 11)
 
-    def set_shamt_int(self, shamt):
-        self._or_shift(shamt, 6)
-
-    def set_shamt_str(self, shamt):
-        self.set_shamt_int(get_imm(shamt))
+    def set_shamt(self, shamt):
+        try:
+            self._or_shift(shamt, 6)
+        except TypeError:
+            self._or_shift(get_imm(shamt), 6)
 
     def set_funct(self, funct):
-        self.set_imm_int(funct)
+        self.set_imm(funct)
 
-    def set_imm_int(self, imm):
-        self.value |= imm
-
-    def set_imm_str(self, immstr):
-        self.set_imm_int(get_imm(immstr))
-
-    def _set_rs(self, rs):
-        self._or_shift(rs, 21)
-
-    def _set_rt(self, rt):
-        self._or_shift(rt, 16)
-
-    def _set_rd(self, rd):
-        self._or_shift(rd, 11)
+    def set_imm(self, imm):
+        try:
+            self.value |= imm
+        except TypeError:
+            self.value |= (get_imm(imm))
 
     def _or_shift(self, num, shift):
         self.value |= (num << shift)
+

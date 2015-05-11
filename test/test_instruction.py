@@ -1,8 +1,13 @@
+from emu.cpu import labeltab
 from emu.instruction import Instruction
 
 
 def line2val(line):
     return Instruction(line).to_binary()[0].value
+
+
+def line2multi(line):
+    return map(lambda x: x.value, Instruction(line).to_binary())
 
 
 def test_to_binary():
@@ -21,3 +26,25 @@ def test_to_binary():
     assert line2val('srlv $t1, $t1, $t2') == 0x1494806
     assert line2val('slt $t1, $t1, $t2') == 0x12a482a
     assert line2val('slti $t1, $t1, 3') == 0x29290003
+
+    labeltab['label'] = 7
+    # didn't exactly do what mars said because the imm section for these tests
+    # will always be 0x0007 b/c there are no prior pseudoinstructions to
+    # offset
+    assert line2val('beq $t1, $t2, label') == 0x112a0007
+    assert line2val('bne $t1, $t2, label') == 0x152a0007
+    assert line2multi('blt $t1, $t2, label') == [0x12a082a, 0x14200007]
+    assert line2multi('bgt $t1, $t2, label') == [0x149082a, 0x14200007]
+    assert line2multi('ble $t1, $t2, label') == [0x149082a, 0x10200007]
+    assert line2multi('bge $t1, $t2, label') == [0x12a082a, 0x10200007]
+    assert line2val('j label') == 0x8000007
+    assert line2val('jal label') == 0xc000007
+    assert line2val('jr $t1') == 0x1200008
+    assert line2val('jalr $t1') == 0x120f809
+    assert line2val('lb $t1, 0($t1)') == 0x81290000
+    assert line2val('lbu $t1, 0($t1)') == 0x91290000
+    assert line2val('lh $t1, 0($t1)') == 0x85290000
+    assert line2val('lhu $t1, 0($t1)') == 0x95290000
+    assert line2val('lw $t1, 0($t1)') == 0x8d290000
+    assert line2val('lui $t1, 3') == 0x3c090003
+    assert line2val('li $t1, 3') == 0x24090003

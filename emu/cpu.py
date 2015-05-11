@@ -3,6 +3,7 @@ import struct
 import logging as log
 
 from registers import Registers
+from util.misc import get_imm
 
 labeltab = {}
 datatab = {}
@@ -14,7 +15,7 @@ class CPU(object):
         self.dmem = dmem
         self.imem = imem
 
-    def start(self, debug):
+    def start(self, debug=None):
         log.critical('=== CPU Start ===\n')
 
         if debug:
@@ -30,6 +31,7 @@ class CPU(object):
             instr = self.imem[self.r.pc]
             try:
                 log.info('[{}] {}'.format(self.r.pc, instr.raw))
+                self.r.pc += 1
                 if debug:
                     while True:
                         inp = raw_input('(debug) ').strip()
@@ -59,7 +61,6 @@ class CPU(object):
                 if e.message == 'exit syscall':
                     return
                 raise e
-            self.r.pc += 1
         log.critical('\n*** pc [{}] outside instruction memory ***'.format(self.r.pc))
 
     def execute_single(self, instr):
@@ -73,7 +74,14 @@ class CPU(object):
             # addi rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            imm = self._get_imm(instr.ops[2])
+            imm = get_imm(instr.ops[2])
+            self.r.write(rd, rs + imm)
+        elif instr.name == 'addiu':
+            # TODO: make this actually work
+            # addiu rt, rs, imm
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            imm = get_imm(instr.ops[2])
             self.r.write(rd, rs + imm)
         elif instr.name == 'sub':
             # sub rd, rs, rt
@@ -91,7 +99,7 @@ class CPU(object):
             # andi rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            imm = self._get_imm(instr.ops[2])
+            imm = get_imm(instr.ops[2])
             self.r.write(rd, rs & imm)
         elif instr.name == 'or':
             # or rd, rs, rt
@@ -103,7 +111,7 @@ class CPU(object):
             # ori rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            imm = self._get_imm(instr.ops[2])
+            imm = get_imm(instr.ops[2])
             self.r.write(rd, rs | imm)
         elif instr.name == 'xor':
             # xor rd, rs, rt
@@ -115,19 +123,19 @@ class CPU(object):
             # xori rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            imm = self._get_imm(instr.ops[2])
+            imm = get_imm(instr.ops[2])
             self.r.write(rd, rs ^ imm)
         elif instr.name == 'sll':
             # sll rd, rt, shamt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            shamt = self._get_imm(instr.ops[2])
+            shamt = get_imm(instr.ops[2])
             self.r.write(rd, rt << shamt)
         elif instr.name == 'srl':
             # srl rd, rt, shamt
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
-            shamt = self._get_imm(instr.ops[2])
+            shamt = get_imm(instr.ops[2])
             self.r.write(rd, rt >> shamt)
         elif instr.name == 'sllv':
             # sllv rd, rt, rs
@@ -148,11 +156,14 @@ class CPU(object):
         elif instr.name == 'slti':
             # slti rd, rs, imm
             rs = instr.ops[1]
-            imm = self._get_imm(instr.ops[2])
+            imm = get_imm(instr.ops[2])
             tmp = 1 if self.r.read(rs) < imm else 0
             self.r.write(instr.ops[0], tmp)
         elif instr.name == 'beq':
             # beq rs, rt, label
+            # TODO: the semantics aren't quite right here. branch instructions'
+            # imm field contains the offset to the branch destination expressed
+            # as the /number of words/
             if (self.r.read(instr.ops[0]) == self.r.read(instr.ops[1])):
                 self._set_pc_label(instr.ops[2])
         elif instr.name == 'bne':
@@ -180,40 +191,40 @@ class CPU(object):
             self._set_pc_label(instr.ops[0])
         elif instr.name == 'jal':
             # jal label
-            self.r.write('ra', self.r.pc + 1)
+            self.r.write('ra', self.r.pc)
             self._set_pc_label(instr.ops[0])
         elif instr.name == 'jr':
             # jr rs
             self._set_pc(self.r.read(instr.ops[0]))
         elif instr.name == 'jalr':
             # jalr rs
-            self.r.write('ra', self.r.pc + 1)
+            self.r.write('ra', self.r.pc)
             self._set_pc(self.r.read(instr.ops[0]))
         elif instr.name == 'lb':
             # lb rt, offs(rs)
             rt = instr.ops[0]
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<b', self.dmem.read(addr, 1))[0]
             self.r.write(rt, read)
         elif instr.name == 'lbu':
             # lbu rt, offs(rs)
             rt = instr.ops[0]
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<B', self.dmem.read(addr, 1))[0]
             self.r.write(rt, read)
         elif instr.name == 'lh':
             # lh rt, offs(rs)
             rt = instr.ops[0]
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<h', self.dmem.read(addr, 2))[0]
             self.r.write(rt, read)
         elif instr.name == 'lhu':
             # lhu rt, offs(rs)
             rt = instr.ops[0]
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<H', self.dmem.read(addr, 2))[0]
             self.r.write(rt, read)
@@ -225,19 +236,19 @@ class CPU(object):
 
             # lw rt, offs(rs)
             rd = instr.ops[0]
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             read = struct.unpack('<I', self.dmem.read(addr, 4))[0]
             self.r.write(rd, read)
         elif instr.name == 'lui':
             # lui rt, imm
             rt = instr.ops[0]
-            imm = self._get_imm(instr.ops[1])
+            imm = get_imm(instr.ops[1])
             self.r.write(rt, (imm << 16) & 0xffffffff)
         elif instr.name == 'li':
             # li rd, imm
             rd = instr.ops[0]
-            imm = self._get_imm(instr.ops[1])
+            imm = get_imm(instr.ops[1])
             self.r.write(rd, imm)
         elif instr.name == 'la':
             # la rd, label
@@ -247,19 +258,19 @@ class CPU(object):
         elif instr.name == 'sb':
             # sb rt, offs(rs)
             rt = self.r.read(instr.ops[0])
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             self.dmem.write(addr, struct.pack('<b' if rt < 0 else '<B', rt))
         elif instr.name == 'sh':
             # sb rt, offs(rs)
             rt = self.r.read(instr.ops[0])
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             self.dmem.write(addr, struct.pack('<h' if rt < 0 else '<H', rt))
         elif instr.name == 'sw':
             # sw rt, offs(rs)
             rt = self.r.read(instr.ops[0])
-            offs = self._get_imm(instr.ops[1])
+            offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
             self.dmem.write(addr, struct.pack('<i' if rt < 0 else '<I', rt))
         elif instr.name == 'move':
@@ -328,9 +339,4 @@ class CPU(object):
         self._set_pc(labeltab[label])
 
     def _set_pc(self, value):
-        # the -1 is because pc is automatically incremented 1 when this
-        # returns
-        self.r.pc = value - 1
-
-    def _get_imm(self, imm):
-        return int(imm, 16) if imm.startswith('0x') else int(imm)
+        self.r.pc = value

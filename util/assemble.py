@@ -1,8 +1,43 @@
-import parse
 import pickle
 import struct
 
 from emu.cpu import labeltab, datatab
+
+#
+# Assembler State
+#
+
+# pseudoinstructions that translate to >1 hardware instructions.
+# key = instruction name, value = # extra instructions it adds
+pseudoinstructions = {'blt': 1, 'bgt': 1, 'ble': 1, 'bge': 1, 'la': 1}
+
+# pseudoinstruction table. keeps track of addresses where pseudoinstructions
+# occur, and their cost (# added instructions)
+pseudotab = {}
+
+resolved_labels = []
+
+
+def resolve(label):
+    """Given label, return address in instruction memory of the label.
+    """
+
+    orig_addr = labeltab[label]
+    # if we haven't already resolved this label
+    if label not in resolved_labels:
+        # for every pseudoinstruction that precedes the label
+        for addr in [addr for addr in pseudotab.keys() if addr < orig_addr]:
+            # increment it's address by the number of extra instructions
+            # caused by the pseudoinstruction
+            labeltab[label] += pseudotab[addr]
+        resolved_labels.append(label)
+
+    return labeltab[label]
+
+
+# another stupid hack to bypass circular import problems. parse needs
+# the globals above
+import parse
 
 
 def assemble(source):
@@ -20,6 +55,7 @@ def assemble(source):
         size_t dtab_size;
     }
     """
+
     header = bytearray('SPYM' + struct.pack('<IIIIIIII', *[0]*8))
     body = ''
     offset = len(header)
@@ -30,7 +66,6 @@ def assemble(source):
 
     sections.append(parse.text_binary(tseg))
     sections.append(parse.data(dseg))
-    sections.append(pickle.dumps(labeltab, pickle.HIGHEST_PROTOCOL))
     sections.append(pickle.dumps(datatab, pickle.HIGHEST_PROTOCOL))
 
     for section in sections:

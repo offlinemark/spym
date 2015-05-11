@@ -16,7 +16,11 @@ REGTAB = {
 
 
 def regmap(strreg):
-    return REGTAB[strreg]
+    """Map string register name, either using shorthand ("t1") or
+    absolute ("1") to the corresponding int value.
+    """
+
+    return int(strreg) if strreg[0].isdigit() else REGTAB[strreg]
 
 
 class Registers(object):
@@ -28,11 +32,10 @@ class Registers(object):
         self.lo = 0
 
     def read(self, reg):
-        ind = int(reg) if reg[0].isdigit() else regmap(reg)
-        return self.gpr[ind]
+        return self.gpr[regmap(reg)]
 
     def write(self, reg, contents):
-        ind = int(reg) if reg[0].isdigit() else regmap(reg)
+        ind = regmap(reg)
         if ind == 0:
             raise Exception('can\'t write to $zero')
         self.gpr[ind] = contents

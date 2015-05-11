@@ -3,6 +3,8 @@ import struct
 
 from emu.cpu import labeltab, datatab
 from emu.instruction import Instruction
+from util.misc import get_imm
+from util.assemble import pseudotab, pseudoinstructions
 
 TYPE_TAB = {
     ".ascii":  None,
@@ -12,10 +14,6 @@ TYPE_TAB = {
     ".halfword": 2,
     ".word": 4
 }
-
-
-def get_imm(imm):
-    return int(imm, 16) if imm.startswith('0x') else int(imm)
 
 
 def data(data_segment):
@@ -80,7 +78,7 @@ def text_list(text_segment):
     """Parses the .text segment source
 
     Args:
-        text_segment: list of lines, including directive
+        text_segment: list of lines, including .text directive
 
     Returns:
         list of Instructions
@@ -110,14 +108,41 @@ def text_list(text_segment):
 
 
 def text_binary(text_segment):
-    # stub
-    # return bytearray('INSTRUCTIONS')
-    label_regex = re.compile('^\w+:$')
-    processed_labels = 0
+    global pseudotab
     imem = bytearray()
-    for i, each in enumerate(text_segment[1:]):
+    # strip .text directive at text_segment[0]
+    text_segment = text_segment[1:]
 
-        if label_regex.match(each):
+    # initializes labeltab, removes labels from text_segment
+    _init_labeltab(text_segment)
+    # then when we resolved labels we look in the pseudotab for all instrs with addrs less than label and all their costs to label addr
+
+    for addr, line in enumerate(text_segment):
+        instr = Instruction(line)
+        # if we found a pseudoinstruction
+        if instr.name in pseudoinstructions.iterkeys():
+            # add entry to pseudotab with its cost (# added instructions)
+            pseudotab[addr] = pseudoinstructions[instr.name]
+        for bini in instr.to_binary():
+            imem += struct.pack('>I', bini.value)
+
+    return imem
+
+
+def _init_labeltab(self, text_segment):
+    """Helper function for populating labeltab structure with labels and their
+    addresses in instruction memory while removing those labels from the
+    input text_segment
+
+    Args:
+        text_segment: list of instruction lines, not including .text directive
+    """
+
+    processed_labels = 0
+    label_regex = re.compile('^\w+:$')
+
+    for addr, line in enumerate(text_segment):
+        if label_regex.match(line):
             key = each.split(':')[0]
             if key in labeltab:
                 raise Exception('label already used')
@@ -127,13 +152,10 @@ def text_binary(text_segment):
             # index in the final list, subtract it by the number of labels
             # that occur above the current one which have been artifically
             # increasing the index
-            labeltab[key] = i - processed_labels
+            labeltab[key] = addr - processed_labels
             processed_labels += 1
-        else:
-            for instr in Instruction(each).to_binary():
-                imem += struct.pack('>I', instr.value)
+            del text_segment[addr]
 
-    return imem
 
 
 def segments(source):
