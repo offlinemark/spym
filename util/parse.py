@@ -129,7 +129,7 @@ def text_binary(text_segment):
     return imem
 
 
-def _init_labeltab(self, text_segment):
+def _init_labeltab(text_segment):
     """Helper function for populating labeltab structure with labels and their
     addresses in instruction memory while removing those labels from the
     input text_segment
@@ -143,7 +143,7 @@ def _init_labeltab(self, text_segment):
 
     for addr, line in enumerate(text_segment):
         if label_regex.match(line):
-            key = each.split(':')[0]
+            key = line.split(':')[0]
             if key in labeltab:
                 raise Exception('label already used')
             # i here indexes into a list containing labels, however those

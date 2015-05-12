@@ -39,6 +39,9 @@ class Instruction(object):
         if self.name == 'add':
             # add rd, rs, rt
             bini.set_arith(0x20, self.ops)
+        elif self.name == 'addu':
+            # addu rd, rs, rt
+            bini.set_arith(0x21, self.ops)
         elif self.name == 'addi':
             # addi rt, rs, imm
             bini.set_arith_imm(0x8, self.ops)
@@ -183,51 +186,53 @@ class Instruction(object):
             bini.set_rt(self.ops[0])
             bini.set_imm(self.ops[1])
         elif self.name == 'li':
-            # li rd, imm
+            # pseudo: li rd, imm
+            # addiu $rd, $zero, imm
             bini = Instruction('addiu {}, $0, {}'.format(self.ops[0],
-                                                        self.ops[1])).to_binary()[0]
+                                                         self.ops[1])).to_binary()[0]
         elif self.name == 'la':
-            # la rd, label
-            # lui = Instruction('lui $1, 0x{:x}'.format(
-                # merge datatab and labeltab into symtab. keep colons at end
-                # of labeltab labels so you can tell the diff.
-            pass
+            # pseudo: la rd, label
+            # lui $1, label[31:16]
+            # ori rd, $1, label[15:0]
+            lui = Instruction('lui $1, 0x{:x}'.format(resolve(self.ops[1]) >> 16)).to_binary()[0]
+            bins.append(lui)
+            bini = Instruction('ori ${}, $1, 0x{:x}'.format(self.ops[0],
+                                                            resolve(self.ops[1]) & 0xffff)).to_binary()[0]
         elif self.name == 'sb':
             # sb rt, offs(rs)
-            pass
-
-
-
-
-
-        # we might not actually need the labeltab in the binary now that the
-        # jump labels can be easily resolved
-
-
+            bini.set_mem(0x28, self.ops)
         elif self.name == 'sh':
-            # sb rt, offs(rs)
-            pass
+            # sh rt, offs(rs)
+            bini.set_mem(0x29, self.ops)
         elif self.name == 'sw':
             # sw rt, offs(rs)
-            pass
+            bini.set_mem(0x2b, self.ops)
         elif self.name == 'move':
-            # move rd, rs
-            pass
+            # pseudo: move rd, rs
+            # addu rd, $zero, rs
+            bini = Instruction('addu ${}, $0, ${}'.format(self.ops[0],
+                                                          self.ops[1])).to_binary()[0]
         elif self.name == 'div':
             # div rs, rt
-            pass
+            bini.set_funct(0x1a)
+            bini.set_rs(self.ops[0])
+            bini.set_rt(self.ops[1])
         elif self.name == 'mult':
             # mult rs, rt
-            pass
+            bini.set_funct(0x18)
+            bini.set_rs(self.ops[0])
+            bini.set_rt(self.ops[1])
         elif self.name == 'mfhi':
             # mfhi rd
-            pass
+            bini.set_funct(0x10)
+            bini.set_rd(self.ops[0])
         elif self.name == 'mflo':
             # mfhi rd
-            pass
+            bini.set_funct(0x12)
+            bini.set_rd(self.ops[0])
         elif self.name == 'syscall':
             # syscall
-            pass
+            bini.set_funct(0xc)
         else:
             raise Exception('bad instruction')
 

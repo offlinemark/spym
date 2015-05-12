@@ -70,6 +70,14 @@ class CPU(object):
             rs = self.r.read(instr.ops[1])
             rt = self.r.read(instr.ops[2])
             self.r.write(rd, rs + rt)
+        elif instr.name == 'addu':
+            # TODO: make this actually work, because right now it's identical
+            # to addu
+            # addu rd, rs, rt
+            rd = instr.ops[0]
+            rs = self.r.read(instr.ops[1])
+            rt = self.r.read(instr.ops[2])
+            self.r.write(rd, rs + rt)
         elif instr.name == 'addi':
             # addi rt, rs, imm
             rd = instr.ops[0]
@@ -77,7 +85,8 @@ class CPU(object):
             imm = get_imm(instr.ops[2])
             self.r.write(rd, rs + imm)
         elif instr.name == 'addiu':
-            # TODO: make this actually work
+            # TODO: make this actually work, because right now it's identical
+            # to addi
             # addiu rt, rs, imm
             rd = instr.ops[0]
             rs = self.r.read(instr.ops[1])
