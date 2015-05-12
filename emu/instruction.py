@@ -299,7 +299,7 @@ class BinaryInstruction(object):
     def set_funct(self, funct):
         self.set_imm(funct)
 
-    def set_imm(self, imm, mask=0):
+    def set_imm(self, imm, mask=0xffffffff):
         try:
             self.value |= (imm & mask)
         except TypeError:
