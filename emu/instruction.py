@@ -103,13 +103,13 @@ class Instruction(object):
             bini.set_opcode(0x4)
             bini.set_rs(self.ops[0])
             bini.set_rt(self.ops[1])
-            bini.set_imm(resolve(self.ops[2]))
+            bini.set_imm(resolve(self.ops[2]), 0xffff)
         elif self.name == 'bne':
             # bne rs, rt, label
             bini.set_opcode(0x5)
             bini.set_rs(self.ops[0])
             bini.set_rt(self.ops[1])
-            bini.set_imm(resolve(self.ops[2]))
+            bini.set_imm(resolve(self.ops[2]), 0xffff)
         elif self.name == 'blt':
             # pseudo: blt rs, rt, label
             # slt $1, rs, rt
@@ -145,11 +145,11 @@ class Instruction(object):
         elif self.name == 'j':
             # j label
             bini.set_opcode(0x2)
-            bini.set_imm(resolve(self.ops[0]))
+            bini.set_imm(resolve(self.ops[0]), 0x3ffffff)
         elif self.name == 'jal':
             # jal label
             bini.set_opcode(0x3)
-            bini.set_imm(resolve(self.ops[0]))
+            bini.set_imm(resolve(self.ops[0]), 0x3ffffff)
         elif self.name == 'jr':
             # jr rs
             bini.set_funct(0x8)
@@ -184,7 +184,7 @@ class Instruction(object):
             # lui rt, imm
             bini.set_opcode(0xf)
             bini.set_rt(self.ops[0])
-            bini.set_imm(self.ops[1])
+            bini.set_imm(self.ops[1], 0xffff)
         elif self.name == 'li':
             # pseudo: li rd, imm
             # addiu $rd, $zero, imm
@@ -261,12 +261,12 @@ class BinaryInstruction(object):
         self.set_opcode(opcode)
         self.set_rt(ops[0])
         self.set_rs(ops[1])
-        self.set_imm(ops[2])
+        self.set_imm(ops[2], 0xffff)
 
     def set_mem(self, opcode, ops):
         self.set_opcode(opcode)
         self.set_rt(ops[0])
-        self.set_imm(ops[1])
+        self.set_imm(ops[1], 0xffff)
         self.set_rs(ops[2])
 
     def set_opcode(self, opcode):
@@ -299,11 +299,11 @@ class BinaryInstruction(object):
     def set_funct(self, funct):
         self.set_imm(funct)
 
-    def set_imm(self, imm):
+    def set_imm(self, imm, mask=0):
         try:
-            self.value |= imm
+            self.value |= (imm & mask)
         except TypeError:
-            self.value |= (get_imm(imm))
+            self.value |= (get_imm(imm) & mask)
 
     def _or_shift(self, num, shift):
         self.value |= (num << shift)

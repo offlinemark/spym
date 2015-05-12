@@ -12,7 +12,7 @@ def line2multi(line):
 
 def test_to_binary():
     assert line2val('add $t1, $t1, $t2') == 0x12a4820
-    assert line2val('addi $t1, $t2, 3') == 0x21490003
+    assert line2val('addi $t1, $t1, -1') == 0x2129ffff
     assert line2val('sub $t1, $t1, $t2') == 0x012a4822
     assert line2val('and $t1, $t1, $t2') == 0x12a4824
     assert line2val('andi $t1, $t2, 3') == 0x31490003

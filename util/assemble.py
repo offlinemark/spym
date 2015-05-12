@@ -65,7 +65,9 @@ def assemble(source):
     dseg, tseg = parse.segments(source)
 
     sections.append(parse.text_binary(tseg))
-    sections.append(parse.data(dseg))
+    # data segment optional
+    if dseg:
+        sections.append(parse.data(dseg))
     sections.append(pickle.dumps(datatab, pickle.HIGHEST_PROTOCOL))
 
     for section in sections:
