@@ -248,6 +248,9 @@ from util.assemble import resolve
 
 
 class BinaryInstruction(object):
+    masks = {'opcode': 0x3f, 'reg': 0x1f, 'shamt': 0x1f, 'funct': 0x3f,
+             'imm16': 0xffff}
+
     def __init__(self):
         self.value = 0
 
@@ -261,40 +264,40 @@ class BinaryInstruction(object):
         self.set_opcode(opcode)
         self.set_rt(ops[0])
         self.set_rs(ops[1])
-        self.set_imm(ops[2], 0xffff)
+        self.set_imm(ops[2], self.masks['imm16'])
 
     def set_mem(self, opcode, ops):
         self.set_opcode(opcode)
         self.set_rt(ops[0])
-        self.set_imm(ops[1], 0xffff)
+        self.set_imm(ops[1], self.masks['imm16'])
         self.set_rs(ops[2])
 
     def set_opcode(self, opcode):
-        self._or_shift(opcode, 26)
+        self._or_shift(opcode, 26, self.masks['opcode'])
 
     def set_rs(self, rs):
         try:
-            self._or_shift(rs, 21)
+            self._or_shift(rs, 21, self.masks['reg'])
         except TypeError:
-            self._or_shift(regmap(rs), 21)
+            self._or_shift(regmap(rs), 21, self.masks['reg'])
 
     def set_rt(self, rt):
         try:
-            self._or_shift(rt, 16)
+            self._or_shift(rt, 16, self.masks['reg'])
         except TypeError:
-            self._or_shift(regmap(rt), 16)
+            self._or_shift(regmap(rt), 16, self.masks['reg'])
 
     def set_rd(self, rd):
         try:
-            self._or_shift(rd, 11)
+            self._or_shift(rd, 11, self.masks['reg'])
         except TypeError:
-            self._or_shift(regmap(rd), 11)
+            self._or_shift(regmap(rd), 11, self.masks['reg'])
 
     def set_shamt(self, shamt):
         try:
-            self._or_shift(shamt, 6)
+            self._or_shift(shamt, 6, self.masks['shamt'])
         except TypeError:
-            self._or_shift(get_imm(shamt), 6)
+            self._or_shift(get_imm(shamt), 6, self.masks['shamt'])
 
     def set_funct(self, funct):
         self.set_imm(funct)
@@ -305,6 +308,5 @@ class BinaryInstruction(object):
         except TypeError:
             self.value |= (get_imm(imm) & mask)
 
-    def _or_shift(self, num, shift):
-        self.value |= (num << shift)
-
+    def _or_shift(self, num, shift, mask=0xffffffff):
+        self.value |= ((num & mask) << shift)
