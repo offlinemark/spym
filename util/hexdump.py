@@ -3,7 +3,7 @@ import logging as log
 
 
 def hexdump(buffer, to_log=False):
-    fmt = '{:04x}: {}{} {}{}  {} {}'
+    fmt = '{:07x}: {}{} {}{}  {}'
 
     for i in range(0, len(buffer), 8):
         word = buffer[i:i+4] if i <= len(buffer) - 4 else buffer[i:]
@@ -11,8 +11,7 @@ def hexdump(buffer, to_log=False):
 
         out = fmt.format(i, binascii.hexlify(word), _pad(word),
                          binascii.hexlify(word2), _pad(word2),
-                         _print_version(word),
-                         _print_version(word2))
+                         _print_version(word + word2))
 
         if to_log:
             log.info(out)
