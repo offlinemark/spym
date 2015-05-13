@@ -114,7 +114,7 @@ def text_binary(text_segment):
     text_segment = text_segment[1:]
 
     # initializes labeltab, removes labels from text_segment
-    _init_labeltab(text_segment)
+    text_segment = _init_labeltab(text_segment)
     # then when we resolved labels we look in the pseudotab for all instrs with addrs less than label and all their costs to label addr
 
     for addr, line in enumerate(text_segment):
@@ -154,7 +154,9 @@ def _init_labeltab(text_segment):
             # increasing the index
             labeltab[key] = addr - processed_labels
             processed_labels += 1
-            del text_segment[addr]
+            text_segment[addr] = None
+
+    return [x for x in text_segment if x is not None]
 
 
 

@@ -40,8 +40,8 @@ def resolve(label):
 import parse
 
 
-def assemble(source):
-    """Generates a spym binary given f.readlines() of a MIPS source file.
+def assemble(fname):
+    """Generates a spym binary given a MIPS source filename.
 
     struct header {
         char[4];
@@ -56,6 +56,8 @@ def assemble(source):
     }
     """
 
+    with open(fname) as f:
+        source = f.readlines()
     header = bytearray('SPYM' + struct.pack('<IIIIIIII', *[0]*8))
     body = ''
     offset = len(header)

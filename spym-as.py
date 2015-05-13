@@ -21,8 +21,7 @@ def main():
     else:
         fname = fname + '.spym'
     # with open(fname, 'w') as f:
-    with open(args.file) as ff:
-        hexdump(assemble(ff.readlines()))
+    hexdump(assemble(args.file))
 
 if __name__ == '__main__':
     main()
