@@ -3,25 +3,22 @@
 import argparse
 
 from util.assemble import assemble
-from util.hexdump import hexdump
 
 
 def get_args():
     parser = argparse.ArgumentParser(description='Spym MIPS Assembler. Generates "spym" format binaries.')
     parser.add_argument('file', metavar='FILE', type=str,
                         help='MIPS source file')
+    parser.add_argument('-o', '--output', type=str,
+                        help='File to write output to. Default is a.out',
+                        default='a.out')
     return parser.parse_args()
 
 
 def main():
     args = get_args()
-    fname = args.file
-    if fname.endswith('.s'):
-        fname = fname[-2:] + '.spym'
-    else:
-        fname = fname + '.spym'
-    # with open(fname, 'w') as f:
-    hexdump(assemble(args.file))
+    with open(args.output, 'w') as f:
+        f.write(assemble(args.file))
 
 if __name__ == '__main__':
     main()
