@@ -7,13 +7,14 @@ from util import parse
 from emu.cpu import CPU
 from emu.instruction import Instruction
 from emu.memory import Memory
+from util.assemble import SPYM_MAGIC
 
 
 def get_args():
     parser = argparse.ArgumentParser(description='Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS source file as argument.')
     parser.add_argument('file', metavar='FILE', type=str,
                         help='MIPS source file', nargs='?')
-    parser.add_argument('--stack', type=int, help='Stack memory size',
+    parser.add_argument('--stack', type=int, help='Stack memory size. Default: 64 bytes',
                         default=64)
     parser.add_argument('--debug', help='Activate debugger. Implies verbose.',
                         action='store_true')
@@ -25,7 +26,23 @@ def get_args():
     return parser.parse_args()
 
 
+def run_source(f):
+    source = f.readlines()
+    dseg, tseg = parse.segments(source)
+    dmem = Memory(args.stack)
+    if dseg:
+        dmem.memory = parse.data(dseg) + dmem.memory
+    cpu = CPU(dmem, parse.text_list(tseg))
+    cpu.start(args.debug)
+    cpu.dump()
+
+
+def run_binary(f):
+    pass
+
+
 def main():
+    global args
     args = get_args()
 
     if args.file:
@@ -33,13 +50,13 @@ def main():
         log.basicConfig(format='%(message)s', level=lvl)
 
         with open(args.file) as f:
-            source = f.readlines()
-        dseg, tseg = parse.segments(source)
-        dmem = Memory(args.stack)
-        if dseg:
-            dmem.memory = parse.data(dseg) + dmem.memory
-        cpu = CPU(dmem, parse.text_list(tseg))
-        cpu.start(args.debug)
+            if f.read(4) == SPYM_MAGIC:
+                run_binary(f)
+            else:
+                run_source(f)
+
+
+
     else:
         log.basicConfig(format='%(message)s', level=log.INFO)
         cpu = CPU(Memory(args.stack))
@@ -61,7 +78,7 @@ def main():
                     break
                 raise e
 
-    cpu.dump()
+        cpu.dump()
 
 if __name__ == '__main__':
     main()
