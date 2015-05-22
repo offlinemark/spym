@@ -3,6 +3,8 @@ import struct
 
 from emu.cpu import labeltab, datatab
 
+SPYM_MAGIC = 'SPYM'
+
 #
 # Assembler State
 #
@@ -49,8 +51,6 @@ def assemble(fname):
         size_t text_size;
         size_t data_offset;
         size_t data_size;
-        size_t ltab_offset;
-        size_t ltab_size;
         size_t dtab_offset;
         size_t dtab_size;
     }
@@ -58,7 +58,7 @@ def assemble(fname):
 
     with open(fname) as f:
         source = f.readlines()
-    header = bytearray('SPYM' + struct.pack('<IIIIIIII', *[0]*8))
+    header = bytearray(SPYM_MAGIC + struct.pack('<IIIIII', *[0]*6))
     body = ''
     offset = len(header)
     i = 4
@@ -67,9 +67,7 @@ def assemble(fname):
     dseg, tseg = parse.segments(source)
 
     sections.append(parse.text_binary(tseg))
-    # data segment optional
-    if dseg:
-        sections.append(parse.data(dseg))
+    sections.append(parse.data(dseg) if dseg else dseg)
     sections.append(pickle.dumps(datatab, pickle.HIGHEST_PROTOCOL))
 
     for section in sections:

@@ -183,7 +183,7 @@ def segments(source):
         # it's text
         if source[0] != '.text':
             raise Exception('.text directive must be first line')
-        return None, source
+        return '', source
     else:
         # it's text and data
         first = source.index(directs[0])
