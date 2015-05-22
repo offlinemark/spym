@@ -1,0 +1,22 @@
+#!/usr/bin/env python2.7
+
+import argparse
+
+from util.assemble import SPYM_MAGIC, SPYMHeader
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Display information about SPYM format files.')
+    parser.add_argument('file', metavar='FILE', type=str,
+                        help='SPYM binary')
+    return parser.parse_args()
+
+
+def main():
+    args = get_args()
+    with open(args.file) as f:
+        hdr = SPYMHeader(binary=f.read(28))
+        hdr.dump()
+
+if __name__ == '__main__':
+    main()
