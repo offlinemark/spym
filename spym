@@ -73,7 +73,7 @@ def main():
 
             try:
                 cpu.execute_single(Instruction(inp))
-            except Exception, e:
+            except Exception as e:
                 if e.message == 'exit syscall':
                     break
                 raise e
