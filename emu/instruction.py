@@ -2,11 +2,12 @@ import re
 
 from emu.registers import regmap
 from util.misc import get_imm
+from emu.cpu import datatab
 
 
 class Instruction(object):
     def __init__(self, line):
-        instr = line.split(' ')
+        instr = line.split()
         self.raw = line
         self.name = instr[0]
         self.ops = []
@@ -194,10 +195,16 @@ class Instruction(object):
             # pseudo: la rd, label
             # lui $1, label[31:16]
             # ori rd, $1, label[15:0]
-            lui = Instruction('lui $1, 0x{:x}'.format(resolve(self.ops[1]) >> 16)).to_binary()[0]
+
+            # TODO: current limitation of la is that it only works for labels
+            # in the .data section. technically we should support .text labels
+            # too. this would involved calling resolve here and unifying the
+            # labeltab and datatab into a single symtab
+
+            lui = Instruction('lui $1, 0x{:x}'.format(datatab[self.ops[1]] >> 16)).to_binary()[0]
             bins.append(lui)
             bini = Instruction('ori ${}, $1, 0x{:x}'.format(self.ops[0],
-                                                            resolve(self.ops[1]) & 0xffff)).to_binary()[0]
+                                                            datatab[self.ops[1]] & 0xffff)).to_binary()[0]
         elif self.name == 'sb':
             # sb rt, offs(rs)
             bini.set_mem(0x28, self.ops)
@@ -222,6 +229,13 @@ class Instruction(object):
             bini.set_funct(0x18)
             bini.set_rs(self.ops[0])
             bini.set_rt(self.ops[1])
+        elif self.name == 'mul':
+            # mul rd, rs, rt
+            bini.set_opcode(0x1c)
+            bini.set_funct(0x2)
+            bini.set_rd(self.ops[0])
+            bini.set_rs(self.ops[1])
+            bini.set_rt(self.ops[2])
         elif self.name == 'mfhi':
             # mfhi rd
             bini.set_funct(0x10)
@@ -234,7 +248,7 @@ class Instruction(object):
             # syscall
             bini.set_funct(0xc)
         else:
-            raise Exception('bad instruction')
+            raise Exception('bad instruction: {}'.format(self.name))
 
         bins.append(bini)
         return bins

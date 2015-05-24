@@ -137,8 +137,10 @@ def assemble(fname):
 
     dseg, tseg = parse.segments(source)
 
-    sections['text'] = parse.text_binary(tseg)
+    # need to call parse.data first so datatab can be populated and used by
+    # parse.text_binary when it needs to resolve
     sections['data'] = parse.data(dseg) if dseg else dseg
+    sections['text'] = parse.text_binary(tseg)
     sections['dtab'] = pickle.dumps(datatab, pickle.HIGHEST_PROTOCOL)
 
     header = SPYMHeader(sections=sections)

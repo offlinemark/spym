@@ -1,4 +1,4 @@
-from emu.cpu import labeltab
+from emu.cpu import labeltab, datatab
 from emu.instruction import Instruction
 
 
@@ -28,6 +28,7 @@ def test_to_binary():
     assert line2val('slti $t1, $t1, 3') == 0x29290003
 
     labeltab['label'] = 7
+    datatab['dat'] = 6
     # didn't exactly do what mars said because the imm section for these tests
     # will always be 0x0007 b/c there are no prior pseudoinstructions to
     # offset
@@ -48,13 +49,14 @@ def test_to_binary():
     assert line2val('lw $t1, 0($t1)') == 0x8d290000
     assert line2val('lui $t1, 3') == 0x3c090003
     assert line2val('li $t1, 3') == 0x24090003
-    assert line2multi('la $t1, label') == [0x3c010000, 0x34290007]
+    assert line2multi('la $t1, dat') == [0x3c010000, 0x34290006]
     assert line2val('sb $t0, 0($sp)') == 0xa3a80000
     assert line2val('sh $t0, 0($sp)') == 0xa7a80000
     assert line2val('sw $t0, 0($sp)') == 0xafa80000
     assert line2val('move $t1, $t0') == 0x84821
     assert line2val('div $t0, $t1') == 0x109001a
     assert line2val('mult $t0, $t1') == 0x1090018
+    assert line2val('mul $t2, $t0, $t1') == 0x71095002
     assert line2val('mfhi $t0') == 0x4010
     assert line2val('mflo $t0') == 0x4012
     assert line2val('syscall') == 0xc

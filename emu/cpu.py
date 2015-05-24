@@ -291,6 +291,12 @@ class CPU(object):
             rt = self.r.read(instr.ops[1])
             self.r.lo = rs / rt
             self.r.hi = rs % rt
+        elif instr.name == 'mul':
+            # mul rd, rs, rt
+            rs = self.r.read(instr.ops[1])
+            rt = self.r.read(instr.ops[2])
+            mult = (rs * rt) & 0xffffffff
+            self.r.write(instr.ops[0], mult)
         elif instr.name == 'mult':
             # mult rs, rt
             rs = self.r.read(instr.ops[0])
@@ -335,7 +341,7 @@ class CPU(object):
                 raise Exception('bad syscall id')
 
         else:
-            raise Exception('bad instruction')
+            raise Exception('bad instruction: {}'.format(instr.name))
 
     def dump(self):
         log.info('\n=== CPU Dump ===')

@@ -50,7 +50,9 @@ def main():
         log.basicConfig(format='%(message)s', level=lvl)
 
         with open(args.file) as f:
-            if f.read(4) == SPYM_MAGIC:
+            magic = f.read(4)
+            f.seek(0)
+            if magic == SPYM_MAGIC:
                 run_binary(f)
             else:
                 run_source(f)
