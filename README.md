@@ -1,13 +1,21 @@
 # spym
 
-A little Harvard architecture MIPS interpreter that runs MIPS source files and
-offers basic GDB-style debugging.
+A MIPS ISA toolchain including a (dis)assembler, debugger, and runtime.
+
+The following utilities are included:
+
+- `spym`: The spym virtual machine, emulating a subset of the MIPS ISA. Capable
+  of executing MIPS assembly source files *and* binaries produced by `spasm`.
+  Includes a basic GDB-style debugger and REPL mode.
+- `spasm`: The spym assembler. Produces SPYM format binaries.
+- `spread`: The spym reader. Displays information about and disassembles SPYM
+  binaries.
 
 ## Usage
 
 ```
-$ ./spym.py -h
-usage: spym.py [-h] [--stack STACK] [--debug] [-v] [FILE]
+$ ./spym -h
+usage: spym [-h] [--stack STACK] [--debug] [-v] [--assemble] [FILE]
 
 Spym MIPS Interpreter. Starts in interactive shell mode, unless given MIPS
 source file as argument.
@@ -17,9 +25,35 @@ positional arguments:
 
 optional arguments:
   -h, --help     show this help message and exit
-  --stack STACK  Stack memory size
+  --stack STACK  Stack memory size. Default: 64 bytes
   --debug        Activate debugger. Implies verbose.
   -v, --verbose  Verbose output
+  --assemble     Assemble file into SPYM binary format rather than execute.
+                 Overrides other arguments.
+
+$ ./spasm -h
+usage: spasm [-h] [-o OUTPUT] FILE
+
+Spym MIPS Assembler. Generates "spym" format binaries.
+
+positional arguments:
+  FILE                  MIPS source file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        File to write output to. Default is a.out
+
+$ ./spread -h
+usage: spread [-h] FILE
+
+Display information about SPYM format files.
+
+positional arguments:
+  FILE        SPYM binary
+
+optional arguments:
+  -h, --help  show this help message and exit
 ```
 
 ## Example
