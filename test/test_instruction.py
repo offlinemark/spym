@@ -12,7 +12,9 @@ def line2multi(line):
 
 def test_to_binary():
     assert line2val('add $t1, $t1, $t2') == 0x12a4820
+    assert line2val('addu $t1, $t1, $t2') == 0x12a4821
     assert line2val('addi $t1, $t1, -1') == 0x2129ffff
+    assert line2val('addiu $t1, $t1, -1') == 0x2529ffff
     assert line2val('sub $t1, $t1, $t2') == 0x012a4822
     assert line2val('and $t1, $t1, $t2') == 0x12a4824
     assert line2val('andi $t1, $t2, 3') == 0x31490003
@@ -71,8 +73,53 @@ def test_bini():
     assert b.get_rd() == 9
     assert b.get_funct() == 0x20
     b = BinaryInstruction(0x2129ffff)
-    assert b.get_imm('i') == -1
+    assert b.get_iimm() == -1
     b = BinaryInstruction(0x948c0)
     assert b.get_shamt() == 3
     b = BinaryInstruction(0x8000007)
-    assert b.get_imm('j') == 7
+    assert b.get_jimm() == 7
+
+
+def bin2instr(bin):
+    return BinaryInstruction(bin).to_instruction().raw
+
+
+def test_to_instruction():
+    assert bin2instr(0x12a4820) == 'add $9, $9, $10'
+    assert bin2instr(0x12a4821) == 'addu $9, $9, $10'
+    assert bin2instr(0x2129ffff) == 'addi $9, $9, -1'
+    assert bin2instr(0x012a4822) == 'sub $9, $9, $10'
+    assert bin2instr(0x12a4824) == 'and $9, $9, $10'
+    assert bin2instr(0x31490003) == 'andi $9, $10, 3'
+    assert bin2instr(0x012a4825) == 'or $9, $9, $10'
+    assert bin2instr(0x35290003) == 'ori $9, $9, 3'
+    assert bin2instr(0x012a4826) == 'xor $9, $9, $10'
+    assert bin2instr(0x39290003) == 'xori $9, $9, 3'
+    assert bin2instr(0x948c0) == 'sll $9, $9, 3'
+    assert bin2instr(0x94902) == 'srl $9, $9, 4'
+    assert bin2instr(0x1494804) == 'sllv $9, $9, $10'
+    assert bin2instr(0x1494806) == 'srlv $9, $9, $10'
+    assert bin2instr(0x12a482a) == 'slt $9, $9, $10'
+    assert bin2instr(0x29290003) == 'slti $9, $9, 3'
+
+    assert bin2instr(0x112a0007) == 'beq $9, $10, 7'
+    assert bin2instr(0x152a0007) == 'bne $9, $10, 7'
+    assert bin2instr(0x8000007) == 'j 7'
+    assert bin2instr(0xc000007) == 'jal 7'
+    assert bin2instr(0x1200008) == 'jr $9'
+    assert bin2instr(0x120f809) == 'jalr $9'
+    assert bin2instr(0x81290000) == 'lb $9, 0($9)'
+    assert bin2instr(0x91290000) == 'lbu $9, 0($9)'
+    assert bin2instr(0x85290000) == 'lh $9, 0($9)'
+    assert bin2instr(0x95290000) == 'lhu $9, 0($9)'
+    assert bin2instr(0x8d290000) == 'lw $9, 0($9)'
+    assert bin2instr(0x3c090003) == 'lui $9, 3'
+    assert bin2instr(0xa3a80000) == 'sb $8, 0($29)'
+    assert bin2instr(0xa7a80000) == 'sh $8, 0($29)'
+    assert bin2instr(0xafa80000) == 'sw $8, 0($29)'
+    assert bin2instr(0x109001a) == 'div $8, $9'
+    assert bin2instr(0x1090018) == 'mult $8, $9'
+    assert bin2instr(0x71095002) == 'mul $10, $8, $9'
+    assert bin2instr(0x4010) == 'mfhi $8'
+    assert bin2instr(0x4012) == 'mflo $8'
+    assert bin2instr(0xc) == 'syscall'

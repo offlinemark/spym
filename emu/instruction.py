@@ -6,6 +6,26 @@ from util.misc import get_imm
 from emu.cpu import datatab
 
 
+def raw_arith(name, self):
+    return '{} ${}, ${}, ${}'.format(name, self.get_rd(), self.get_rs(),
+                                     self.get_rt())
+
+
+def raw_arith_imm(name, self):
+    return '{} ${}, ${}, {}'.format(name, self.get_rt(), self.get_rs(),
+                                    self.get_iimm())
+
+
+def raw_branch(name, self):
+    return '{} ${}, ${}, {}'.format(name, self.get_rs(), self.get_rt(),
+                                    self.get_iimm())
+
+
+def raw_mem(name, self):
+    return '{} ${}, {}(${})'.format(name, self.get_rt(), self.get_iimm(),
+                                    self.get_rs())
+
+
 class Instruction(object):
     def __init__(self, line):
         instr = line.split()
@@ -242,7 +262,7 @@ class Instruction(object):
             bini.set_funct(0x10)
             bini.set_rd(self.ops[0])
         elif self.name == 'mflo':
-            # mfhi rd
+            # mflo rd
             bini.set_funct(0x12)
             bini.set_rd(self.ops[0])
         elif self.name == 'syscall':
@@ -335,15 +355,15 @@ class BinaryInstruction(object):
     def set_funct(self, funct):
         self.set_imm(funct & self.masks['funct'])
 
-    def get_imm(self, type):
-        if type == 'i':
-            # need to extract bits as signed
-            return ctypes.c_short(self.value & self.masks['imm16']).value
-        elif type == 'j':
-            # semantics of the j instr means unsigned here
-            return self.value & self.masks['imm26']
-        else:
-            raise Exception('bad type')
+    def get_jimm(self):
+        # j instr imm
+        # semantics of the j instr means unsigned here
+        return self.value & self.masks['imm26']
+
+    def get_iimm(self):
+        # i instr imm
+        # need to extract bits as signed
+        return ctypes.c_short(self.value & self.masks['imm16']).value
 
     def set_imm(self, imm, mask=0xffffffff):
         try:
@@ -356,3 +376,149 @@ class BinaryInstruction(object):
 
     def _or_shift(self, num, shift, mask=0xffffffff):
         self.value |= ((num & mask) << shift)
+
+    def to_instruction(self):
+        """Returns binary instruction a proper Instruction object.
+        """
+
+        instr = None
+        op = self.get_opcode()
+
+        if op == 0:
+            # arithmetic instruction
+            funct = self.get_funct()
+            if funct == 0x20:
+                # add rd, rs, rt
+                instr = Instruction(raw_arith('add', self))
+            elif funct == 0x21:
+                # addu rd, rs, rt
+                instr = Instruction(raw_arith('addu', self))
+            elif funct == 0x22:
+                # sub rd, rs, rt
+                instr = Instruction(raw_arith('sub', self))
+            elif funct == 0x24:
+                # and rd, rs, rt
+                instr = Instruction(raw_arith('and', self))
+            elif funct == 0x25:
+                # or rd, rs, rt
+                instr = Instruction(raw_arith('or', self))
+            elif funct == 0x26:
+                # xor rd, rs, rt
+                instr = Instruction(raw_arith('xor', self))
+            elif funct == 0:
+                # sll rd, rt, shamt
+                instr = Instruction('sll ${}, ${}, {}'.format(self.get_rd(),
+                                                              self.get_rt(),
+                                                              self.get_shamt()))
+            elif funct == 2:
+                # sll rd, rt, shamt
+                instr = Instruction('srl ${}, ${}, {}'.format(self.get_rd(),
+                                                              self.get_rt(),
+                                                              self.get_shamt()))
+            elif funct == 0x4:
+                # sllv rd, rt, rs
+                instr = Instruction('sllv ${}, ${}, ${}'.format(self.get_rd(),
+                                                                self.get_rt(),
+                                                                self.get_rs()))
+            elif funct == 0x6:
+                # srlv rd, rt, rs
+                instr = Instruction('srlv ${}, ${}, ${}'.format(self.get_rd(),
+                                                                self.get_rt(),
+                                                                self.get_rs()))
+            elif funct == 0x2a:
+                # slt rd, rs, rt
+                instr = Instruction(raw_arith('slt', self))
+            elif funct == 0x8:
+                # jr rs
+                instr = Instruction('jr ${}'.format(self.get_rs()))
+            elif funct == 0x9:
+                # jalr rs
+                instr = Instruction('jalr ${}'.format(self.get_rs()))
+            elif funct == 0x1a:
+                # div rs, rt
+                instr = Instruction('div ${}, ${}'.format(self.get_rs(),
+                                                          self.get_rt()))
+            elif funct == 0x18:
+                # mult rs, rt
+                instr = Instruction('mult ${}, ${}'.format(self.get_rs(),
+                                                           self.get_rt()))
+            elif funct == 0x10:
+                # mfhi rd
+                instr = Instruction('mfhi ${}'.format(self.get_rd()))
+            elif funct == 0x12:
+                # mflo rd
+                instr = Instruction('mflo ${}'.format(self.get_rd()))
+            elif funct == 0xc:
+                # syscall
+                instr = Instruction('syscall')
+            else:
+                raise Exception('bad funct')
+        elif op == 0x8:
+            # addi rt, rs, imm
+            instr = Instruction(raw_arith_imm('addi', self))
+        elif op == 0x9:
+            # addiu rt, rs, imm
+            instr = Instruction(raw_arith_imm('addiu', self))
+        elif op == 0xc:
+            # andi rt, rs, imm
+            instr = Instruction(raw_arith_imm('andi', self))
+        elif op == 0xd:
+            # ori rt, rs, imm
+            instr = Instruction(raw_arith_imm('ori', self))
+        elif op == 0xe:
+            # xori rt, rs, imm
+            instr = Instruction(raw_arith_imm('xori', self))
+        elif op == 0xa:
+            # slti rd, rs, imm
+            instr = Instruction(raw_arith_imm('slti', self))
+        elif op == 0x4:
+            # beq rs, rt, label
+            instr = Instruction(raw_branch('beq', self))
+        elif op == 0x5:
+            # bne rs, rt, label
+            instr = Instruction(raw_branch('bne', self))
+        elif op == 0x2:
+            # j label
+            instr = Instruction('j {}'.format(self.get_jimm()))
+        elif op == 0x3:
+            # j label
+            instr = Instruction('jal {}'.format(self.get_jimm()))
+        elif op == 0x20:
+            # lb rt, offs(rs)
+            instr = Instruction(raw_mem('lb', self))
+        elif op == 0x24:
+            # lbu rt, offs(rs)
+            instr = Instruction(raw_mem('lbu', self))
+        elif op == 0x21:
+            # lh rt, offs(rs)
+            instr = Instruction(raw_mem('lh', self))
+        elif op == 0x25:
+            # lhu rt, offs(rs)
+            instr = Instruction(raw_mem('lhu', self))
+        elif op == 0x23:
+            # lw rt, offs(rs)
+            instr = Instruction(raw_mem('lw', self))
+        elif op == 0xf:
+            # lui rt, imm
+            instr = Instruction('lui ${}, {}'.format(self.get_rt(),
+                                                     self.get_iimm()))
+        elif op == 0x28:
+            # sb rt, offs(rs)
+            instr = Instruction(raw_mem('sb', self))
+        elif op == 0x29:
+            # sh rt, offs(rs)
+            instr = Instruction(raw_mem('sh', self))
+        elif op == 0x2b:
+            # sw rt, offs(rs)
+            instr = Instruction(raw_mem('sw', self))
+        elif op == 0x1c:
+            funct = self.get_funct()
+            if funct == 0x2:
+                # mul rd, rs, rt
+                instr = Instruction('mul ${}, ${}, ${}'.format(self.get_rd(),
+                                                               self.get_rs(),
+                                                               self.get_rt()))
+        else:
+            raise Exception('bad opcode')
+
+        return instr

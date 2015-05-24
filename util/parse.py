@@ -2,7 +2,7 @@ import re
 import struct
 
 from emu.cpu import labeltab, datatab
-from emu.instruction import Instruction
+from emu.instruction import Instruction, BinaryInstruction
 from util.misc import get_imm
 from util.assemble import pseudotab, pseudoinstructions
 
@@ -159,7 +159,6 @@ def _init_labeltab(text_segment):
     return [x for x in text_segment if x is not None]
 
 
-
 def segments(source):
     """Parses out the .data and .text segments given the f.readlines() of
     the MIPS source file.
@@ -197,4 +196,8 @@ def segments(source):
 
 
 def bin2text_list(binary):
-    pass
+    text_list = []
+    for bini in [binary[i:i+4] for i in range(0, len(binary), 4)]:
+        value = struct.unpack('>I', bini)[0]
+        text_list.append(BinaryInstruction(value).to_instruction())
+    return text_list

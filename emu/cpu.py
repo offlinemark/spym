@@ -351,7 +351,10 @@ class CPU(object):
         self.dmem.dump()
 
     def _set_pc_label(self, label):
-        self._set_pc(labeltab[label])
+        try:
+            self._set_pc(int(label))
+        except ValueError:
+            self._set_pc(labeltab[label])
 
     def _set_pc(self, value):
         self.r.pc = value

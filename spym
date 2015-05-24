@@ -38,12 +38,6 @@ def run_source(raw):
 
 
 def run_binary(raw):
-    # parse sections
-    # convert .text into text_list
-    # create Memory
-    # set cpu datatab
-    # create cpu, start it
-
     hdr = SPYMHeader(binary=raw[:28])
     text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
     dmem = Memory(args.stack)
@@ -71,9 +65,6 @@ def main():
                 run_binary(raw)
             else:
                 run_source(raw)
-
-
-
     else:
         log.basicConfig(format='%(message)s', level=log.INFO)
         cpu = CPU(Memory(args.stack))
