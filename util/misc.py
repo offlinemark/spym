@@ -9,3 +9,7 @@
 
 def get_imm(imm):
     return int(imm, 16) if imm.startswith('0x') else int(imm)
+
+
+def get_section(raw, off, size):
+    return raw[off:off+size]

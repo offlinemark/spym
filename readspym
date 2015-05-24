@@ -2,7 +2,7 @@
 
 import argparse
 
-from util.assemble import SPYM_MAGIC, SPYMHeader
+from util.assemble import SPYMHeader, disassemble
 
 
 def get_args():
@@ -17,6 +17,8 @@ def main():
     with open(args.file) as f:
         hdr = SPYMHeader(binary=f.read(28))
         hdr.dump()
+        f.seek(0)
+        disassemble(f.read())
 
 if __name__ == '__main__':
     main()

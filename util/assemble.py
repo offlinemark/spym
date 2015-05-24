@@ -2,6 +2,7 @@ import pickle
 import struct
 
 from emu.cpu import labeltab, datatab
+from util.misc import get_section
 
 SPYM_MAGIC = 'SPYM'
 
@@ -148,3 +149,11 @@ def assemble(fname):
         body += sections[section]
 
     return header.to_binary() + body
+
+
+def disassemble(raw):
+    hdr = SPYMHeader(binary=raw[:28])
+    text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
+    print '\nDisassembly:\n'
+    for each in text:
+        print each.raw
