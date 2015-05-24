@@ -15,7 +15,7 @@ def get_args():
 def main():
     args = get_args()
     with open(args.file) as f:
-        hdr = SPYMHeader(binary=f.read(28))
+        hdr = SPYMHeader(binary=f.read(20))
         hdr.dump()
         f.seek(0)
         disassemble(f.read())

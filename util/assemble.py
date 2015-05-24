@@ -52,12 +52,10 @@ class SPYMHeader(object):
 
         self.magic = SPYM_MAGIC
         # there's always text, and it's always right after the header
-        self.text_off = 28
+        self.text_off = 20
         self.text_size = 0
         self.data_off = 0
         self.data_size = 0
-        self.dtab_off = 0
-        self.dtab_size = 0
 
         if sections:
             self._from_sections(sections)
@@ -77,31 +75,25 @@ class SPYMHeader(object):
             elif section == 'data':
                 self.data_size = size
                 self.data_off = offset
-            elif section == 'dtab':
-                self.dtab_size = size
-                self.dtab_off = offset
             else:
                 raise Exception('bad section')
             offset += size
 
     def _from_binary(self, binary):
-        hdr = struct.unpack('<4s6I', binary)
+        hdr = struct.unpack('<4s4I', binary)
         if hdr[0] != self.magic:
             raise Exception('bad magic')
-        elif len(hdr) != 7:
+        elif len(hdr) != 5:
             raise Exception('bad header')
 
         self.text_off = hdr[1]
         self.text_size = hdr[2]
         self.data_off = hdr[3]
         self.data_size = hdr[4]
-        self.dtab_off = hdr[5]
-        self.dtab_size = hdr[6]
 
     def to_binary(self):
-        return struct.pack('<4s6I', self.magic, self.text_off, self.text_size,
-                           self.data_off, self.data_size, self.dtab_off,
-                           self.dtab_size)
+        return struct.pack('<4s4I', self.magic, self.text_off, self.text_size,
+                           self.data_off, self.data_size)
 
     def dump(self):
         print 'SPYM Header:'
@@ -110,8 +102,6 @@ class SPYMHeader(object):
         self._dumpln('Text Size', self.text_size)
         self._dumpln('Data Start', self.data_off)
         self._dumpln('Data Size', self.data_size)
-        self._dumpln('Data Table Start', self.dtab_off)
-        self._dumpln('Data Table Size', self.dtab_size)
 
     def _dumpln(self, label, value):
         print '  {}{}'.format((label + ':').ljust(20), value)
@@ -126,8 +116,6 @@ def assemble(fname):
         size_t text_size;
         size_t data_offset;
         size_t data_size;
-        size_t dtab_offset;
-        size_t dtab_size;
     }
     """
 
@@ -142,7 +130,6 @@ def assemble(fname):
     # parse.text_binary when it needs to resolve
     sections['data'] = parse.data(dseg) if dseg else dseg
     sections['text'] = parse.text_binary(tseg)
-    sections['dtab'] = pickle.dumps(datatab, pickle.HIGHEST_PROTOCOL)
 
     header = SPYMHeader(sections=sections)
     for section in sections.keys():
@@ -152,7 +139,7 @@ def assemble(fname):
 
 
 def disassemble(raw):
-    hdr = SPYMHeader(binary=raw[:28])
+    hdr = SPYMHeader(binary=raw[:20])
     text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
     print '\nDisassembly:\n'
     for each in text:

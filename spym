@@ -8,6 +8,7 @@ from emu.cpu import CPU
 from emu.instruction import Instruction
 from emu.memory import Memory
 from util.assemble import SPYM_MAGIC, SPYMHeader
+from util.misc import get_section
 
 
 def get_args():
@@ -38,7 +39,7 @@ def run_source(raw):
 
 
 def run_binary(raw):
-    hdr = SPYMHeader(binary=raw[:28])
+    hdr = SPYMHeader(binary=raw[:20])
     text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
     dmem = Memory(args.stack)
     dmem.memory = get_section(raw, hdr.data_off, hdr.data_size) + dmem.memory
@@ -47,8 +48,6 @@ def run_binary(raw):
     cpu.dump()
 
 
-def get_section(raw, off, size):
-    return raw[off:off+size]
 
 
 def main():
