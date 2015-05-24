@@ -11,6 +11,11 @@ The following utilities are included:
 - `spread`: The spym reader. Displays information about and disassembles SPYM
   binaries.
 
+> Note: spym does not include a lexer or parser, because they are outside the
+> scope of this learning exercise. Thus, it does not perform any kind of syntax
+> validation and will likely crash if you give it poorly formatted code. You
+> have been warned.
+
 ## Usage
 
 ```
