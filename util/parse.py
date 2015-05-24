@@ -194,3 +194,7 @@ def segments(source):
             split = split[::-1]
 
         return split
+
+
+def bin2text_list(binary):
+    pass

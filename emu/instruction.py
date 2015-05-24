@@ -1,4 +1,5 @@
 import re
+import ctypes
 
 from emu.registers import regmap
 from util.misc import get_imm
@@ -263,10 +264,10 @@ from util.assemble import resolve
 
 class BinaryInstruction(object):
     masks = {'opcode': 0x3f, 'reg': 0x1f, 'shamt': 0x1f, 'funct': 0x3f,
-             'imm16': 0xffff}
+             'imm16': 0xffff, 'imm26': 0x3ffffff}
 
-    def __init__(self):
-        self.value = 0
+    def __init__(self, value=0):
+        self.value = value
 
     def set_arith(self, funct, ops):
         self.set_funct(funct)
@@ -286,8 +287,14 @@ class BinaryInstruction(object):
         self.set_imm(ops[1], self.masks['imm16'])
         self.set_rs(ops[2])
 
+    def get_opcode(self):
+        return self._get_bits(26, self.masks['opcode'])
+
     def set_opcode(self, opcode):
         self._or_shift(opcode, 26, self.masks['opcode'])
+
+    def get_rs(self):
+        return self._get_bits(21, self.masks['reg'])
 
     def set_rs(self, rs):
         try:
@@ -295,11 +302,17 @@ class BinaryInstruction(object):
         except TypeError:
             self._or_shift(regmap(rs), 21, self.masks['reg'])
 
+    def get_rt(self):
+        return self._get_bits(16, self.masks['reg'])
+
     def set_rt(self, rt):
         try:
             self._or_shift(rt, 16, self.masks['reg'])
         except TypeError:
             self._or_shift(regmap(rt), 16, self.masks['reg'])
+
+    def get_rd(self):
+        return self._get_bits(11, self.masks['reg'])
 
     def set_rd(self, rd):
         try:
@@ -307,20 +320,39 @@ class BinaryInstruction(object):
         except TypeError:
             self._or_shift(regmap(rd), 11, self.masks['reg'])
 
+    def get_shamt(self):
+        return self._get_bits(6, self.masks['shamt'])
+
     def set_shamt(self, shamt):
         try:
             self._or_shift(shamt, 6, self.masks['shamt'])
         except TypeError:
             self._or_shift(get_imm(shamt), 6, self.masks['shamt'])
 
+    def get_funct(self):
+        return self.value & self.masks['funct']
+
     def set_funct(self, funct):
-        self.set_imm(funct)
+        self.set_imm(funct & self.masks['funct'])
+
+    def get_imm(self, type):
+        if type == 'i':
+            # need to extract bits as signed
+            return ctypes.c_short(self.value & self.masks['imm16']).value
+        elif type == 'j':
+            # semantics of the j instr means unsigned here
+            return self.value & self.masks['imm26']
+        else:
+            raise Exception('bad type')
 
     def set_imm(self, imm, mask=0xffffffff):
         try:
             self.value |= (imm & mask)
         except TypeError:
             self.value |= (get_imm(imm) & mask)
+
+    def _get_bits(self, shift, mask):
+        return (self.value >> shift) & mask
 
     def _or_shift(self, num, shift, mask=0xffffffff):
         self.value |= ((num & mask) << shift)

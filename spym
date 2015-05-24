@@ -7,7 +7,7 @@ from util import parse
 from emu.cpu import CPU
 from emu.instruction import Instruction
 from emu.memory import Memory
-from util.assemble import SPYM_MAGIC
+from util.assemble import SPYM_MAGIC, SPYMHeader
 
 
 def get_args():
@@ -26,8 +26,8 @@ def get_args():
     return parser.parse_args()
 
 
-def run_source(f):
-    source = f.readlines()
+def run_source(raw):
+    source = raw.splitlines()
     dseg, tseg = parse.segments(source)
     dmem = Memory(args.stack)
     if dseg:
@@ -37,8 +37,24 @@ def run_source(f):
     cpu.dump()
 
 
-def run_binary(f):
-    pass
+def run_binary(raw):
+    # parse sections
+    # convert .text into text_list
+    # create Memory
+    # set cpu datatab
+    # create cpu, start it
+
+    hdr = SPYMHeader(binary=raw[:28])
+    text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
+    dmem = Memory(args.stack)
+    dmem.memory = get_section(raw, hdr.data_off, hdr.data_size) + dmem.memory
+    cpu = CPU(dmem, text)
+    cpu.start(args.debug)
+    cpu.dump()
+
+
+def get_section(raw, off, size):
+    return raw[off:off+size]
 
 
 def main():
@@ -50,12 +66,11 @@ def main():
         log.basicConfig(format='%(message)s', level=lvl)
 
         with open(args.file) as f:
-            magic = f.read(4)
-            f.seek(0)
-            if magic == SPYM_MAGIC:
-                run_binary(f)
+            raw = f.read()
+            if raw[:4] == SPYM_MAGIC:
+                run_binary(raw)
             else:
-                run_source(f)
+                run_source(raw)
 
 
 

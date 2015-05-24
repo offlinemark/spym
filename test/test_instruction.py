@@ -1,5 +1,5 @@
 from emu.cpu import labeltab, datatab
-from emu.instruction import Instruction
+from emu.instruction import Instruction, BinaryInstruction
 
 
 def line2val(line):
@@ -60,3 +60,19 @@ def test_to_binary():
     assert line2val('mfhi $t0') == 0x4010
     assert line2val('mflo $t0') == 0x4012
     assert line2val('syscall') == 0xc
+
+
+def test_bini():
+    b = BinaryInstruction(0x12a4820)
+    assert b.get_opcode() == 0
+    assert b.get_rs() == 9
+    assert b.get_rt() == 10
+    assert b.get_rd() == 9
+    assert b.get_rd() == 9
+    assert b.get_funct() == 0x20
+    b = BinaryInstruction(0x2129ffff)
+    assert b.get_imm('i') == -1
+    b = BinaryInstruction(0x948c0)
+    assert b.get_shamt() == 3
+    b = BinaryInstruction(0x8000007)
+    assert b.get_imm('j') == 7
