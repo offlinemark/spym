@@ -21,9 +21,6 @@ def get_args():
                         action='store_true')
     parser.add_argument('-v', '--verbose', help='Verbose output',
                         action='store_true')
-    parser.add_argument('--assemble',
-                        help='Assemble file into SPYM binary format rather than execute. Overrides other arguments.',
-                        action='store_true')
     return parser.parse_args()
 
 
