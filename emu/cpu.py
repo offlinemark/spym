@@ -53,7 +53,8 @@ class CPU(object):
                         elif inp in ['q', 'quit']:
                             sys.exit()
                         elif inp.split()[0] in ['p', 'print']:
-                            log.info(self.r.read(inp.split()[1][1:]))
+                            reg = inp.split()[1]
+                            log.info(self.r.read(reg[1:] if reg.startswith('$') else reg))
                         else:
                             log.error('Bad Command')
                 self.execute_single(instr)
