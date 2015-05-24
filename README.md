@@ -33,8 +33,6 @@ optional arguments:
   --stack STACK  Stack memory size. Default: 64 bytes
   --debug        Activate debugger. Implies verbose.
   -v, --verbose  Verbose output
-  --assemble     Assemble file into SPYM binary format rather than execute.
-                 Overrides other arguments.
 
 $ ./spasm -h
 usage: spasm [-h] [-o OUTPUT] FILE
