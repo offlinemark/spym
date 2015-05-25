@@ -69,7 +69,6 @@ def main():
             if inp == 'exit':
                 break
             elif inp == 'dump':
-                print 123
                 cpu.dump()
                 continue
             elif not inp:

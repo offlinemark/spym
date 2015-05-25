@@ -17,7 +17,7 @@ TYPE_TAB = {
 
 
 def data(data_segment):
-    """Parses the .text segment source. Populates CPU datatab addresses of
+    """Parses the .data segment source. Populates CPU datatab addresses of
     labels.
 
     Args:
