@@ -5,6 +5,7 @@ from emu.cpu import labeltab, datatab
 from util.misc import get_section
 
 SPYM_MAGIC = 'SPYM'
+SPYM_HDR_LEN = 20
 
 #
 # Assembler State
@@ -52,7 +53,7 @@ class SPYMHeader(object):
 
         self.magic = SPYM_MAGIC
         # there's always text, and it's always right after the header
-        self.text_off = 20
+        self.text_off = SPYM_HDR_LEN
         self.text_size = 0
         self.data_off = 0
         self.data_size = 0
@@ -112,6 +113,7 @@ def assemble(fname):
 
     struct header {
         char[4];
+        size_t interp_offset;
         size_t text_offset;
         size_t text_size;
         size_t data_offset;
@@ -139,7 +141,7 @@ def assemble(fname):
 
 
 def disassemble(raw):
-    hdr = SPYMHeader(binary=raw[:20])
+    hdr = SPYMHeader(binary=raw[:SPYM_HDR_LEN])
     text = parse.bin2text_list(get_section(raw, hdr.text_off, hdr.text_size))
     print '\nDisassembly:\n'
     for each in text:
