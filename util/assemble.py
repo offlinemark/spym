@@ -1,7 +1,6 @@
-import pickle
 import struct
 
-from emu.cpu import labeltab, datatab
+from emu.cpu import labeltab
 from util.misc import get_section
 
 SPYM_MAGIC = 'SPYM'
