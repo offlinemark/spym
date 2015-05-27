@@ -86,11 +86,10 @@ class SPYMHeader(object):
         hdr = struct.unpack(self.pack, binary)
         if hdr[0] != self.magic:
             raise Exception('bad magic')
-        elif len(hdr) != 5:
+        elif len(hdr) != 6:
             raise Exception('bad header')
 
-        self.interp_off, self.text_off, self.text_size, self.data_off,
-        self.data_size = hdr
+        self.interp_off, self.text_off, self.text_size, self.data_off, self.data_size = hdr[1:]
 
     def to_binary(self):
         return struct.pack(self.pack, self.magic, self.interp_off,
