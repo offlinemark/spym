@@ -4,7 +4,7 @@ from emu.cpu import labeltab
 from util.misc import get_section
 
 SPYM_MAGIC = 'SPYM'
-SPYM_HDR_LEN = 20
+SPYM_HDR_LEN = 24
 
 #
 # Assembler State
@@ -44,6 +44,8 @@ import parse
 
 
 class SPYMHeader(object):
+    interp = '/usr/bin/spym\x00'
+    pack = '<4s5I'
 
     def __init__(self, sections=None, binary=None):
         """Construct header either from source (sections dict) or from binary
@@ -51,8 +53,8 @@ class SPYMHeader(object):
         """
 
         self.magic = SPYM_MAGIC
-        # there's always text, and it's always right after the header
-        self.text_off = SPYM_HDR_LEN
+        self.interp_off = SPYM_HDR_LEN
+        self.text_off = self.interp_off + len(self.interp)
         self.text_size = 0
         self.data_off = 0
         self.data_size = 0
@@ -64,7 +66,7 @@ class SPYMHeader(object):
 
     def _from_sections(self, sections):
         """Set header fields, given a dict of the schema
-        {'text': bytearray, 'data': bytearray, 'dtab': dict}.
+        {'text': bytearray, 'data': bytearray}.
         """
 
         offset = self.text_off
@@ -72,6 +74,7 @@ class SPYMHeader(object):
             size = len(sections[section])
             if section == 'text':
                 self.text_size = size
+                self.text_off = offset
             elif section == 'data':
                 self.data_size = size
                 self.data_off = offset
@@ -80,24 +83,24 @@ class SPYMHeader(object):
             offset += size
 
     def _from_binary(self, binary):
-        hdr = struct.unpack('<4s4I', binary)
+        hdr = struct.unpack(self.pack, binary)
         if hdr[0] != self.magic:
             raise Exception('bad magic')
         elif len(hdr) != 5:
             raise Exception('bad header')
 
-        self.text_off = hdr[1]
-        self.text_size = hdr[2]
-        self.data_off = hdr[3]
-        self.data_size = hdr[4]
+        self.interp_off, self.text_off, self.text_size, self.data_off,
+        self.data_size = hdr
 
     def to_binary(self):
-        return struct.pack('<4s4I', self.magic, self.text_off, self.text_size,
-                           self.data_off, self.data_size)
+        return struct.pack(self.pack, self.magic, self.interp_off,
+                           self.text_off, self.text_size, self.data_off,
+                           self.data_size)
 
     def dump(self):
         print 'SPYM Header:'
         self._dumpln('Magic', self.magic.encode('hex'))
+        self._dumpln('Interpreter Start', self.interp_off)
         self._dumpln('Text Start', self.text_off)
         self._dumpln('Text Size', self.text_size)
         self._dumpln('Data Start', self.data_off)
@@ -136,7 +139,7 @@ def assemble(fname):
     for section in sections.keys():
         body += sections[section]
 
-    return header.to_binary() + body
+    return ''.join([header.to_binary(), header.interp, str(body)])
 
 
 def disassemble(raw):
