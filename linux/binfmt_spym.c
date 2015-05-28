@@ -30,17 +30,24 @@ struct spym_header_t {
 static int load_spym(struct linux_binprm *bprm)
 {
     int retval;
-    const char *interp;
     char interpbuf[BINPRM_BUF_SIZE];
+    const char *interp = interpbuf;
     struct file *file;
     struct spym_header_t* hdr = (struct spym_header_t*) bprm->buf;
+    int len;
 
     /* Validate magic */
     if (memcmp(hdr->magic, SPYM_MAGIC, strlen(SPYM_MAGIC)))
         return -ENOEXEC;
 
+    /* just to be safe */
+    bprm->buf[BINPRM_BUF_SIZE - 1] = '\0';
+
     /* Parse out interpreter path */
-    interp = bprm->buf + hdr->interp_off;
+    len = strnlen(bprm->buf + hdr->interp_off, BINPRM_BUF_SIZE - sizeof hdr);
+    retval = kernel_read(bprm->file, hdr->interp_off, interpbuf, len + 1);
+    if (retval < 0)
+        return retval;
 
     /* Set up bprm to execute the interpreter with an argument of the
      * filename
@@ -90,8 +97,7 @@ static int load_spym(struct linux_binprm *bprm)
     bprm->argc++;
 
     /* Make sure we update bprm->interp */
-    strcpy(interpbuf, interp);
-    retval = bprm_change_interp(interpbuf, bprm);
+    retval = bprm_change_interp((char *)interp, bprm);
     if (retval)
         return retval;
 
