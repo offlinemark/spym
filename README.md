@@ -16,6 +16,18 @@ The following utilities are included:
 > validation and will likely crash if you give it poorly formatted code. You
 > have been warned.
 
+## building
+
+To build these utilities as location independent executables, make sure you
+have `python2.7` and `zip` available, and run
+
+```bash
+make
+```
+
+This will create a `bin/` directory with the three location independent
+executables.
+
 ## Usage
 
 ```
