@@ -7,16 +7,19 @@ The following utilities are included:
 - `spym`: The spym virtual machine, emulating a subset of the MIPS ISA. Capable
   of executing MIPS assembly source files *and* binaries produced by `spasm`.
   Includes a basic GDB-style debugger and REPL mode.
-- `spasm`: The spym assembler. Produces SPYM format binaries.
+- `spasm`: The spym assembler/linker. Produces SPYM format binaries.
 - `spread`: The spym reader. Displays information about and disassembles SPYM
   binaries.
+
+For fun, inside the `linux/` directory resides the source for a kernel module
+that enables native execution of SPYM binaries on Linux.
 
 > Note: spym does not include a lexer or parser, because they are outside the
 > scope of this learning exercise. Thus, it does not perform any kind of syntax
 > validation and will likely crash if you give it poorly formatted code. You
 > have been warned.
 
-## building
+## Building
 
 To build these utilities as location independent executables, make sure you
 have `python2.7` and `zip` available, and run
