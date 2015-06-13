@@ -6,19 +6,14 @@ from util.misc import get_section
 SPYM_MAGIC = 'SPYM'
 SPYM_HDR_LEN = 24
 
-#
-# Assembler State
-#
-
 # pseudoinstructions that translate to >1 hardware instructions.
 # key = instruction name, value = # extra instructions it adds
-pseudoinstructions = {'blt': 1, 'bgt': 1, 'ble': 1, 'bge': 1, 'la': 1}
+PSEUDOINSTRUCTIONS = {'blt': 1, 'bgt': 1, 'ble': 1, 'bge': 1, 'la': 1}
+
 
 # pseudoinstruction table. keeps track of addresses where pseudoinstructions
 # occur, and their cost (# added instructions)
 pseudotab = {}
-
-resolved_labels = []
 
 
 def resolve(label):
@@ -27,15 +22,17 @@ def resolve(label):
 
     orig_addr = labeltab[label]
     # if we haven't already resolved this label
-    if label not in resolved_labels:
+    if label not in resolve.resolved_labels:
         # for every pseudoinstruction that precedes the label
         for addr in [addr for addr in pseudotab.keys() if addr < orig_addr]:
             # increment it's address by the number of extra instructions
             # caused by the pseudoinstruction
             labeltab[label] += pseudotab[addr]
-        resolved_labels.append(label)
+        resolve.resolved_labels.append(label)
 
     return labeltab[label]
+# static variable to keep track of already resolved labels
+resolve.resolved_labels = []
 
 
 # another stupid hack to bypass circular import problems. parse needs

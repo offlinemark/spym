@@ -4,7 +4,7 @@ import struct
 from emu.cpu import labeltab, datatab
 from emu.instruction import Instruction, BinaryInstruction
 from util.misc import get_imm
-from util.assemble import pseudotab, pseudoinstructions
+from util.assemble import pseudotab, PSEUDOINSTRUCTIONS
 
 TYPE_TAB = {
     ".ascii":  None,
@@ -120,9 +120,9 @@ def text_binary(text_segment):
     for addr, line in enumerate(text_segment):
         instr = Instruction(line)
         # if we found a pseudoinstruction
-        if instr.name in pseudoinstructions.iterkeys():
+        if instr.name in PSEUDOINSTRUCTIONS.iterkeys():
             # add entry to pseudotab with its cost (# added instructions)
-            pseudotab[addr] = pseudoinstructions[instr.name]
+            pseudotab[addr] = PSEUDOINSTRUCTIONS[instr.name]
         for bini in instr.to_binary():
             imem += struct.pack('>I', bini.value)
 
