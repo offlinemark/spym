@@ -156,7 +156,7 @@ def _init_labeltab(text_segment):
             processed_labels += 1
             text_segment[addr] = None
 
-    return [x for x in text_segment if x is not None]
+    return filter(None, text_segment)
 
 
 def segments(source):
