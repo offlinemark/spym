@@ -16,7 +16,7 @@ class CPU(object):
         self.imem = imem
 
     def start(self, debug=None):
-        log.critical('=== CPU Start ===\n')
+        log.info('=== CPU Start ===\n')
 
         if debug:
             last = '?'
@@ -62,7 +62,7 @@ class CPU(object):
                 if e.message == 'exit syscall':
                     return
                 raise e
-        log.critical('\n*** pc [{}] outside instruction memory ***'.format(self.r.pc))
+        log.info('\n*** pc [{}] outside instruction memory ***'.format(self.r.pc))
 
     def execute_single(self, instr):
         if instr.name == 'add':
@@ -316,7 +316,7 @@ class CPU(object):
             id = self.r.read('v0')
             if id == 10:
                 # exit
-                log.critical('\n*** exiting ***')
+                log.info('\n*** exiting ***')
                 raise Exception('exit syscall')
             elif id == 1:
                 # print_int
