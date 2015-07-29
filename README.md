@@ -28,8 +28,7 @@ have `python2.7` and `zip` available, and run
 make
 ```
 
-This will create a `bin/` directory with the three location independent
-executables.
+This will create a `bin/` directory with the above three executables.
 
 ## Usage
 
