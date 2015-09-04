@@ -21,7 +21,7 @@ class CPU(object):
         if debug:
             last = '?'
             cmds = ['?', '(p)rint $reg', '(c)ontinue', '(d)ump', '(n)ext',
-                    '(q)uit']
+                    '(q)uit', '(l)ist next']
             log.info("*** debug mode enabled. '?' for help ***\n")
 
         if self.imem is None:
@@ -52,6 +52,8 @@ class CPU(object):
                             break
                         elif inp in ['q', 'quit']:
                             sys.exit()
+                        elif inp in ['l', 'list']:
+                            log.info('[{}] {}'.format(self.r.pc, instr.raw))
                         elif inp.split()[0] in ['p', 'print']:
                             reg = inp.split()[1]
                             log.info(self.r.read(reg[1:] if reg.startswith('$') else reg))
