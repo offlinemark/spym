@@ -53,7 +53,7 @@ class Cache(object):
                 # word was straddling blocks
                 try:
                     next_block = self.cache[caddr.index+1]
-                    word += next_block.data[:WORD_BYTES-len(ret)]
+                    word += next_block.data[:WORD_BYTES-len(word)]
                     return word
                 except IndexError:
                     # fell off the end of cache, cache miss
