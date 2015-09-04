@@ -63,21 +63,24 @@ class Cache(object):
                 return word
 
         # retrieve block from main memory
-        word = self.dmem.read(addr, BLOCK_BYTES)
+        blk = self.dmem.read(addr, BLOCK_BYTES)
 
         # write back to cache
         block.valid = True
         block.tag = caddr.tag
         # TODO dmem.read should prob just ret a bytearray
-        block.data = bytearray(word)
+        block.data = bytearray(blk)
 
-        return word[:WORD_BYTES]
+        return blk[:WORD_BYTES]
 
 
     def write(self, addr, buffer):
         pass
 
     def dump(self):
+        log.info('Total Size: {} bytes'.format(CACHE_BYTES))
+        log.info('Block Size: {} bytes'.format(BLOCK_BYTES))
+        log.info('Blocks: {}\n'.format(num_blocks))
         log.info('block\tvalid\ttag\tdata')
         log.info('-'*40)
         for i, block in enumerate(self.cache):
