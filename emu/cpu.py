@@ -2,6 +2,7 @@ import sys
 import struct
 import logging as log
 
+from cache import Cache
 from registers import Registers
 from util.misc import get_imm
 
@@ -12,7 +13,10 @@ datatab = {}
 class CPU(object):
     def __init__(self, dmem, imem=None):
         self.r = Registers(dmem.size())
+        # ideally we wouldn't need dmem at all because cache will handle
+        # eventyhing, but print_string is troublesome
         self.dmem = dmem
+        self.cache = Cache(dmem)
         self.imem = imem
 
     def start(self, debug=None):
@@ -215,7 +219,7 @@ class CPU(object):
             rt = instr.ops[0]
             offs = get_imm(instr.ops[1])
             addr = self.r.read(instr.ops[2]) + offs
-            read = struct.unpack('<b', self.dmem.read(addr, 1))[0]
+            read = struct.unpack('<b', self.cache.read(addr)[:1])[0]
             self.r.write(rt, read)
         elif instr.name == 'lbu':
             # lbu rt, offs(rs)
@@ -350,6 +354,8 @@ class CPU(object):
         self.r.dump()
         log.info('\nData/Stack Memory\n')
         self.dmem.dump()
+        log.info('\nCache\n')
+        self.cache.dump()
 
     def _set_pc_label(self, label):
         try:

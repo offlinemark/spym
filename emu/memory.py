@@ -8,6 +8,9 @@ class Memory(object):
         self.memory = bytearray([0] * size)
 
     def read(self, addr, count):
+        import time
+        print 'hit memory'
+        time.sleep(1)
         if addr < 0 or addr + count > self.size():
             raise Exception('read outside memory bounds')
         elif count < 0:
