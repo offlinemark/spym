@@ -12,7 +12,7 @@ class Memory(object):
             raise Exception('read outside memory bounds')
         elif count < 0:
             raise Exception('negative memory read')
-        return str(self.memory[addr:addr+count])
+        return self.memory[addr:addr+count]
 
     def write(self, addr, buffer):
         # conscientiously /not/ checking if they're overwriting data section
