@@ -68,18 +68,16 @@ class Cache(object):
 
         # cache miss
 
-        # retrieve block from main memory. need to mask off addr offset to
-        # to retrieve correctly aligned block
-        blk = self.dmem.read(addr & ~offset_mask, BLOCK_BYTES)
-
         # write back to cache
         block.valid = True
         block.dirty = False
         block.tag = caddr.tag
-        # TODO dmem.read should prob just ret a bytearray
-        block.data = bytearray(blk)
 
-        return blk[:WORD_BYTES]
+        # retrieve block from main memory. need to mask off addr offset to
+        # to retrieve correctly aligned block
+        block.data = self.dmem.read(addr & ~offset_mask, BLOCK_BYTES)
+
+        return block.data[caddr.offset:caddr.offset+WORD_BYTES]
 
     def write(self, addr, word):
         '''Write word into addr, using write-back/allocate strategy.'''
