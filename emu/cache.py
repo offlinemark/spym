@@ -65,9 +65,9 @@ class Cache(object):
                 print 'hit cache!'
                 return word
 
-        # retrieve block from main memory
-        # TODO correct block alignment
-        blk = self.dmem.read(addr, BLOCK_BYTES)
+        # retrieve block from main memory. need to mask off addr offset to
+        # to retrieve correctly aligned block
+        blk = self.dmem.read(addr & ~offset_mask, BLOCK_BYTES)
 
         # write back to cache
         block.valid = True
