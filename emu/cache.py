@@ -136,4 +136,4 @@ class Cache(object):
         log.info('-'*40)
         for i, block in enumerate(self.cache):
             log.info('{}\t{}\t{}\t{}\t{}'.format(i, block.valid, block.dirty,
-                                                  block.tag, binascii.hexlify(block.data)))
+                                                 block.tag, binascii.hexlify(block.data)))
