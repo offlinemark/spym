@@ -23,6 +23,14 @@ offset_len = (BLOCK_BYTES-1).bit_length()
 offset_mask = BLOCK_BYTES - 1
 
 
+def block_base(addr):
+    return addr & ~offset_len
+
+
+def will_straddle(offset):
+    return offset + WORD_BYTES > BLOCK_BYTES
+
+
 class Block(object):
     def __init__(self):
         self.valid = False
@@ -52,10 +60,11 @@ class Cache(object):
         if block.valid and block.tag == caddr.tag:
             # cache hit
             word = block.data[caddr.offset:caddr.offset+WORD_BYTES]
-            if len(word) != WORD_BYTES:
+            if will_straddle(caddr.offset):
                 # word was straddling blocks
                 try:
                     # TODO this is totally incorrect straddling behavior
+                    raise NotImplementedError('straddling read hit not impl')
                     next_block = self.cache[caddr.index+1]
                     word += next_block.data[:WORD_BYTES-len(word)]
                     return word
@@ -75,7 +84,10 @@ class Cache(object):
 
         # retrieve block from main memory. need to mask off addr offset to
         # to retrieve correctly aligned block
-        block.data = self.dmem.read(addr & ~offset_mask, BLOCK_BYTES)
+        block.data = self.dmem.read(block_base(addr), BLOCK_BYTES)
+        if will_straddle(caddr.offset):
+            # TODO
+            raise NotImplementedError('straddling read miss not impl')
 
         return block.data[caddr.offset:caddr.offset+WORD_BYTES]
 
@@ -94,23 +106,26 @@ class Cache(object):
             # redundant if this is the second write to this block
             block.dirty = True
 
-            if caddr.offset + WORD_BYTES > BLOCK_BYTES:
+            if will_straddle(caddr.offset):
                 # straddling blocks
                 # TODO
-                pass
+                raise NotImplementedError('straddling write hit not impl')
 
             block.data[caddr.offset:caddr.offset+WORD_BYTES] = word
         else:
             # cache miss
             if block.valid and block.dirty:
                 # need to evict
+                # TODO shouldn't be addr, should be addr & ~offset_mask
                 self.dmem.write(addr, block.data)
             # redundant if clean valid block
             block.valid = True
             block.dirty = True
             block.tag = caddr.tag
-            block.data = self.dmem.read(addr, BLOCK_BYTES)
-            # TODO straddle
+            block.data = self.dmem.read(block_base(addr), BLOCK_BYTES)
+            if will_straddle(caddr.offset):
+                # TODO straddle
+                raise NotImplementedError('straddling write miss not impl')
             block.data[caddr.offset:caddr.offset+WORD_BYTES] = word
 
     def dump(self):
