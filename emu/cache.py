@@ -116,8 +116,7 @@ class Cache(object):
             # cache miss
             if block.valid and block.dirty:
                 # need to evict
-                # TODO shouldn't be addr, should be addr & ~offset_mask
-                self.dmem.write(addr, block.data)
+                self.dmem.write(block_base(addr), block.data)
             # redundant if clean valid block
             block.valid = True
             block.dirty = True
