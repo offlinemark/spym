@@ -46,15 +46,16 @@ class Cache(object):
 
     def read(self, addr):
         """Return word at addr, deferring to main mem if necessary."""
-        # TODO incorporate dirty flag where necessary
 
         caddr = CacheAddr(addr)
         block = self.cache[caddr.index]
         if block.valid and block.tag == caddr.tag:
+            # cache hit
             word = block.data[caddr.offset:caddr.offset+WORD_BYTES]
             if len(word) != WORD_BYTES:
                 # word was straddling blocks
                 try:
+                    # TODO this is totally incorrect straddling behavior
                     next_block = self.cache[caddr.index+1]
                     word += next_block.data[:WORD_BYTES-len(word)]
                     return word
@@ -65,12 +66,15 @@ class Cache(object):
                 print 'hit cache!'
                 return word
 
+        # cache miss
+
         # retrieve block from main memory. need to mask off addr offset to
         # to retrieve correctly aligned block
         blk = self.dmem.read(addr & ~offset_mask, BLOCK_BYTES)
 
         # write back to cache
         block.valid = True
+        block.dirty = False
         block.tag = caddr.tag
         # TODO dmem.read should prob just ret a bytearray
         block.data = bytearray(blk)
