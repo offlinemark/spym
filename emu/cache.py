@@ -119,7 +119,7 @@ class Cache(object):
                 self.dmem.write(block_base(addr), block.data)
             # redundant if clean valid block
             block.valid = True
-            block.dirty = True
+            block.dirty = False
             block.tag = caddr.tag
             block.data = self.dmem.read(block_base(addr), BLOCK_BYTES)
             if will_straddle(caddr.offset):
